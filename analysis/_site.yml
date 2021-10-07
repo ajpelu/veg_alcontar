@@ -1,7 +1,7 @@
-name: "veg_alcontar"
+name: Analysis of vegetation parameters (Alcóntar)
 output_dir: ../docs
 navbar:
-  title: "veg_alcontar"
+  title: Analysis of vegetation parameters (Alcóntar)
   left:
   - text: Home
     href: index.html
@@ -9,6 +9,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fa-github
+    text: Source code
+    href: https://github.com/ajpelu/veg_alcontar
 output:
   workflowr::wflow_html:
     toc: yes
