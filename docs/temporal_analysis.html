@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="ajpelu" />
+
+<meta name="date" content="2021-10-07" />
+
+<title>temporal_analysis</title>
+
+<script src="site_libs/header-attrs-2.8/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Analysis of vegetation parameters (Alcóntar)</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/ajpelu/veg_alcontar">
+    <span class="fas fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">temporal_analysis</h1>
+<h4 class="author">ajpelu</h4>
+<h4 class="date">2021-10-07</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-10-13
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>veg_alcontar/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20211007code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20211007)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20211007code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20211007)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomajpeluvegalcontartreec9913efd8f97147e0dfcce82ecff973f7fa50ec8targetblankc9913efa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/ajpelu/veg_alcontar/tree/c9913efd8f97147e0dfcce82ecff973f7fa50ec8" target="_blank">c9913ef</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomajpeluvegalcontartreec9913efd8f97147e0dfcce82ecff973f7fa50ec8targetblankc9913efa" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/ajpelu/veg_alcontar/tree/c9913efd8f97147e0dfcce82ecff973f7fa50ec8" target="_blank">c9913ef</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/temporal_analysis.Rmd</code>) and HTML (<code>docs/temporal_analysis.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/ajpelu/veg_alcontar/blob/c9913efd8f97147e0dfcce82ecff973f7fa50ec8/analysis/temporal_analysis.Rmd" target="_blank">c9913ef</a>
+</td>
+<td>
+ajpelu
+</td>
+<td>
+2021-10-13
+</td>
+<td>
+wflow_publish(“analysis/temporal_analysis.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<ul>
+<li><p>Read data</p></li>
+<li><p>Rename the levels of <em>zona</em>:</p>
+<ul>
+<li><strong>Pyric herbivorism</strong> (<strong><em>HP</em></strong>, from spanish <em>Herbivorismo pírico</em>): old <em>Quemado con pastoreo</em></li>
+<li><strong>Prescribed Fires</strong> (<strong><em>QP</em></strong>, from spanish <em>Quemas Prescritas</em>): old <em>Quemado sin pastoreo</em></li>
+</ul></li>
+</ul>
+<pre class="r"><code>veg_raw &lt;- readxl::read_excel(here::here(&quot;data/Datos_congreso_AEET.xlsx&quot;)) %&gt;% 
+  janitor::clean_names() 
+
+autumn_fire &lt;- lubridate::ymd(&quot;2018-12-18&quot;)
+grazing_start &lt;- lubridate::ymd(&quot;2019-10-01&quot;)
+
+veg &lt;- veg_raw %&gt;% 
+  rename(fecha = fecha_muestreos, 
+         shan = i_shannon, 
+         consumo = tasa_consumo, 
+         riq = riqueza) %&gt;% 
+  mutate(treat = as.factor(case_when(
+    zona == &quot;Quemado con pastoreo&quot; ~ &quot;HP&quot;, 
+    TRUE ~ &quot;QP&quot;
+  ))) %&gt;% 
+  mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %&gt;% 
+  mutate(quadrat = as.factor(quadrat)) %&gt;% 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  ))</code></pre>
+<ul>
+<li>Explore the data</li>
+</ul>
+<pre><code>     fecha
+treat 2018-11-21 2019-06-04 2019-12-18 2020-05-19 2020-11-17 2021-05-19
+   HP         32         32         32         32         32         32
+   QP         32         32         32         32         32         32</code></pre>
+</div>
+<div id="statistical-analysis" class="section level1">
+<h1>Statistical analysis</h1>
+<ul>
+<li><p>We used Generalizad Additive Mixed Models (GAMM) to evaluate the effects of treatment (Prescribed Fires <em>vs.</em> Pyric herbivorism) on the evolution of plant cover, phytovolumen and diversity indices (Shannon, Richness).</p></li>
+<li><p>We modelling the date after fire (in months; <em>meses</em>) as smoother (<code>s(meses)</code>)</p></li>
+<li><p>Date after fire and treatment was include as fixed effects</p></li>
+<li><p>Quadrats were included as random</p></li>
+<li><p>Different distribution family (<em>e.g.</em> Poisson, Negative Binomial, etc) were used.</p></li>
+</ul>
+</div>
+<div id="richness" class="section level1">
+<h1>Richness</h1>
+<div id="model" class="section level2">
+<h2>Model</h2>
+<pre class="r"><code>f &lt;- as.formula(riq ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = poisson)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+      Distribution Probability
+            normal         66%
+           tweedie         31%
+ negative binomial          3%
+
+Predicted Distribution of Response
+
+               Distribution Probability
+              beta-binomial         59%
+          negative binomial         12%
+ neg. binomial (zero-infl.)          9%</code></pre>
+<div id="model-validation" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+2.2929
+</td>
+<td style="text-align:left;">
+0.0462
+</td>
+<td style="text-align:left;">
+49.6501
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.2641
+</td>
+<td style="text-align:left;">
+0.0666
+</td>
+<td style="text-align:left;">
+-3.9679
+</td>
+<td style="text-align:left;">
+0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+2.2348
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+9.8769
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+3.5900
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+11.6368
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="shannon" class="section level1">
+<h1>Shannon</h1>
+<div id="model-1" class="section level2">
+<h2>Model</h2>
+<pre class="r"><code>veg$shannon &lt;- abs(veg$shan)
+
+f &lt;- as.formula(shannon ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         50%
+         beta         12%
+      tweedie         12%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+      tweedie         47%
+      weibull         25%
+         beta         12%</code></pre>
+<div id="model-validation-1" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-1" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+0.2221
+</td>
+<td style="text-align:left;">
+0.0765
+</td>
+<td style="text-align:left;">
+2.9019
+</td>
+<td style="text-align:left;">
+0.0039
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.1219
+</td>
+<td style="text-align:left;">
+0.1084
+</td>
+<td style="text-align:left;">
+-1.1251
+</td>
+<td style="text-align:left;">
+0.2613
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+2.9693
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+12.7785
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+2.7838
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+14.0029
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-1" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="total-cover" class="section level1">
+<h1>Total Cover</h1>
+<div id="model-2" class="section level2">
+<h2>Model</h2>
+<pre class="r"><code>f &lt;- as.formula(rec_tot ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = nb)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         69%
+      tweedie         28%
+         beta          3%
+
+Predicted Distribution of Response
+
+               Distribution Probability
+ neg. binomial (zero-infl.)         91%
+              beta-binomial          9%</code></pre>
+<div id="model-validation-2" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-2" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+3.1731
+</td>
+<td style="text-align:left;">
+0.0793
+</td>
+<td style="text-align:left;">
+40.0093
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.0433
+</td>
+<td style="text-align:left;">
+0.1122
+</td>
+<td style="text-align:left;">
+-0.3863
+</td>
+<td style="text-align:left;">
+0.6995
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+3.8758
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+53.4401
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+3.9313
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+86.8968
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-2" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="vegetation-cover" class="section level1">
+<h1>Vegetation Cover</h1>
+<div id="model-3" class="section level2">
+<h2>Model</h2>
+<pre class="r"><code>f &lt;- as.formula(rec_veg ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw) </code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         59%
+      tweedie         41%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+      tweedie         38%
+        gamma         28%
+  exponential         12%</code></pre>
+<div id="model-validation-3" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-3" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+3.2225
+</td>
+<td style="text-align:left;">
+0.0794
+</td>
+<td style="text-align:left;">
+40.5673
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.0524
+</td>
+<td style="text-align:left;">
+0.1125
+</td>
+<td style="text-align:left;">
+-0.4656
+</td>
+<td style="text-align:left;">
+0.6418
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+3.8507
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+56.3101
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+3.9285
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+82.9721
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-3" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="phytovol" class="section level1">
+<h1>Phytovol</h1>
+<div id="model-4" class="section level2">
+<h2>Model</h2>
+<pre class="r"><code>veg$fitovolT &lt;- sqrt(veg$fitovol)
+f &lt;- as.formula(fitovolT ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+m &lt;- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         69%
+      tweedie         31%
+
+Predicted Distribution of Response
+
+               Distribution Probability
+                    tweedie         91%
+ neg. binomial (zero-infl.)          6%
+                exponential          3%</code></pre>
+<div id="model-validation-4" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-4" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+2.9981
+</td>
+<td style="text-align:left;">
+0.0779
+</td>
+<td style="text-align:left;">
+38.4854
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.0521
+</td>
+<td style="text-align:left;">
+0.1103
+</td>
+<td style="text-align:left;">
+-0.4721
+</td>
+<td style="text-align:left;">
+0.6371
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+3.8902
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+94.7206
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+3.9261
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+113.2126
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-4" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="phytovol-i" class="section level1">
+<h1>Phytovol (I)</h1>
+<div id="model-5" class="section level2">
+<h2>Model</h2>
+<pre class="r"><code>f &lt;- as.formula(fitovol ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+m &lt;- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         50%
+      tweedie         50%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+    lognormal         31%
+      tweedie         22%
+            F         16%</code></pre>
+<div id="model-validation-5" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-5" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+6.1291
+</td>
+<td style="text-align:left;">
+0.1537
+</td>
+<td style="text-align:left;">
+39.8752
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.1246
+</td>
+<td style="text-align:left;">
+0.2179
+</td>
+<td style="text-align:left;">
+-0.5720
+</td>
+<td style="text-align:left;">
+0.5676
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+3.8933
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+129.0408
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+3.9218
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+148.4011
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-5" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="tasa-consumo" class="section level1">
+<h1>Tasa consumo</h1>
+<div id="model-6" class="section level2">
+<h2>Model</h2>
+<ul>
+<li>Caution, there is an outlier .</li>
+</ul>
+<pre class="r"><code>veg %&gt;% filter(consumo &gt; 8)</code></pre>
+<pre><code># A tibble: 1 x 15
+  zona    parcela quadrat rango_infoca fecha               rec_tot rec_veg   riq
+  &lt;chr&gt;   &lt;chr&gt;   &lt;fct&gt;          &lt;dbl&gt; &lt;dttm&gt;                &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+1 Quemad… AL_P_14 P14Q8              4 2020-05-19 00:00:00      16      20    17
+# … with 7 more variables: shan &lt;dbl&gt;, fitovol &lt;dbl&gt;, consumo &lt;dbl&gt;,
+#   treat &lt;fct&gt;, meses &lt;dbl&gt;, shannon &lt;dbl&gt;, fitovolT &lt;dbl&gt;</code></pre>
+<pre class="r"><code>f &lt;- as.formula(consumo ~ s(meses, by = treat, k=5, bs=&quot;cs&quot;) + treat)
+
+veg.out &lt;- veg %&gt;% filter(consumo &lt; 8)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg.out)</code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         53%
+      tweedie         31%
+         beta         12%
+
+Predicted Distribution of Response
+
+         Distribution Probability
+              tweedie         88%
+                 beta          6%
+ poisson (zero-infl.)          6%</code></pre>
+<div id="model-validation-6" class="section level3">
+<h3>Model validation</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-6" class="section level3">
+<h3>Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+0.3678
+</td>
+<td style="text-align:left;">
+0.0362
+</td>
+<td style="text-align:left;">
+10.1564
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatQP
+</td>
+<td style="text-align:left;">
+-0.2283
+</td>
+<td style="text-align:left;">
+0.0512
+</td>
+<td style="text-align:left;">
+-4.4610
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:left;">
+3.9324
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+45.6797
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:left;">
+3.0710
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+6.2542
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-6" class="section level3">
+<h3>Visualizing effects</h3>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="general-overview" class="section level1">
+<h1>General overview</h1>
+<ul>
+<li>Parametric terms</li>
+</ul>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+Variable
+</th>
+<th style="text-align:center;">
+term
+</th>
+<th style="text-align:right;">
+Estimate
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:right;">
+F
+</th>
+<th style="text-align:right;">
+p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Richness
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+2.293
+</td>
+<td style="text-align:right;">
+0.046
+</td>
+<td style="text-align:right;">
+49.65
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Richness
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.264
+</td>
+<td style="text-align:right;">
+0.067
+</td>
+<td style="text-align:right;">
+-3.97
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Shannon
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+0.222
+</td>
+<td style="text-align:right;">
+0.077
+</td>
+<td style="text-align:right;">
+2.90
+</td>
+<td style="text-align:right;">
+0.0039
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Shannon
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.122
+</td>
+<td style="text-align:right;">
+0.108
+</td>
+<td style="text-align:right;">
+-1.13
+</td>
+<td style="text-align:right;">
+0.2613
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+3.173
+</td>
+<td style="text-align:right;">
+0.079
+</td>
+<td style="text-align:right;">
+40.01
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.043
+</td>
+<td style="text-align:right;">
+0.112
+</td>
+<td style="text-align:right;">
+-0.39
+</td>
+<td style="text-align:right;">
+0.6995
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Veg. cover
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+3.222
+</td>
+<td style="text-align:right;">
+0.079
+</td>
+<td style="text-align:right;">
+40.57
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Veg. cover
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.052
+</td>
+<td style="text-align:right;">
+0.113
+</td>
+<td style="text-align:right;">
+-0.47
+</td>
+<td style="text-align:right;">
+0.6418
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+2.998
+</td>
+<td style="text-align:right;">
+0.078
+</td>
+<td style="text-align:right;">
+38.49
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.052
+</td>
+<td style="text-align:right;">
+0.110
+</td>
+<td style="text-align:right;">
+-0.47
+</td>
+<td style="text-align:right;">
+0.6371
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+6.129
+</td>
+<td style="text-align:right;">
+0.154
+</td>
+<td style="text-align:right;">
+39.88
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.125
+</td>
+<td style="text-align:right;">
+0.218
+</td>
+<td style="text-align:right;">
+-0.57
+</td>
+<td style="text-align:right;">
+0.5676
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Tasa Consumo
+</td>
+<td style="text-align:center;">
+treatHP
+</td>
+<td style="text-align:right;">
+0.368
+</td>
+<td style="text-align:right;">
+0.036
+</td>
+<td style="text-align:right;">
+10.16
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Tasa Consumo
+</td>
+<td style="text-align:center;">
+treatQP
+</td>
+<td style="text-align:right;">
+-0.228
+</td>
+<td style="text-align:right;">
+0.051
+</td>
+<td style="text-align:right;">
+-4.46
+</td>
+<td style="text-align:right;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Smooth terms</li>
+</ul>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+edf
+</th>
+<th style="text-align:right;">
+ref.df
+</th>
+<th style="text-align:right;">
+F
+</th>
+<th style="text-align:left;">
+p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Richness
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+2.235
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+9.88
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Richness
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+3.590
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+11.64
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Shannon
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+2.969
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+12.78
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Shannon
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+2.784
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+14.00
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total cover
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+3.876
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+53.44
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total cover
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+3.931
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+86.90
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Veg. cover
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+3.851
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+56.31
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Veg. cover
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+3.929
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+82.97
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+3.890
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+94.72
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+3.926
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+113.21
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+3.893
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+129.04
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+3.922
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+148.40
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tasa Consumo
+</td>
+<td style="text-align:left;">
+s(meses):treatHP
+</td>
+<td style="text-align:right;">
+3.932
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+45.68
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tasa Consumo
+</td>
+<td style="text-align:left;">
+s(meses):treatQP
+</td>
+<td style="text-align:right;">
+3.071
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+6.25
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="some-resources" class="section level1">
+<h1>Some resources</h1>
+<ul>
+<li><a href="https://doi.org/10.1080/03610926.2011.628772">Plots for Generalized Additive Models</a></li>
+<li><a href="https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/family.mgcv.html">Family distributions for GAMs</a></li>
+<li><a href="https://stefanocoretta.github.io/tidymv/index.html">Tidy Model Visualisation for Generalised Additive Models</a></li>
+<li><a href="https://noamross.github.io/gams-in-r-course">Course about GAMs</a></li>
+<li>Hierarchical generalized additive models in ecology: an introduction with mgcv <a href="https://peerj.com/articles/6876/">paper</a></li>
+<li><a href="https://m-clark.github.io/generalized-additive-models">GAMs</a></li>
+</ul>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre><code>R version 4.0.2 (2020-06-22)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Catalina 10.15.3
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] performance_0.7.2 broom_0.7.9       tidymv_3.2.1      kableExtra_1.3.1 
+ [5] itsadug_2.4       plotfunctions_1.4 gratia_0.6.0      mgcv_1.8-33      
+ [9] nlme_3.1-152      janitor_2.1.0     here_1.0.1        forcats_0.5.1    
+[13] stringr_1.4.0     dplyr_1.0.6       purrr_0.3.4       readr_1.4.0      
+[17] tidyr_1.1.3       tibble_3.1.2      ggplot2_3.3.5     tidyverse_1.3.1  
+[21] workflowr_1.6.2  
+
+loaded via a namespace (and not attached):
+ [1] fs_1.5.0            lubridate_1.7.10    RColorBrewer_1.1-2 
+ [4] insight_0.14.4      webshot_0.5.2       httr_1.4.2         
+ [7] rprojroot_2.0.2     tools_4.0.2         backports_1.2.1    
+[10] bslib_0.2.4         utf8_1.1.4          R6_2.5.0           
+[13] DBI_1.1.1           colorspace_2.0-0    withr_2.4.1        
+[16] tidyselect_1.1.1    compiler_4.0.2      git2r_0.28.0       
+[19] cli_2.5.0           rvest_1.0.0         xml2_1.3.2         
+[22] labeling_0.4.2      bayestestR_0.9.0    sass_0.3.1         
+[25] scales_1.1.1        randomForest_4.6-14 mvnfast_0.2.7      
+[28] digest_0.6.27       rmarkdown_2.8       pkgconfig_2.0.3    
+[31] htmltools_0.5.2     highr_0.8           dbplyr_2.1.1       
+[34] fastmap_1.1.0       rlang_0.4.10        readxl_1.3.1       
+[37] rstudioapi_0.13     farver_2.0.3        jquerylib_0.1.3    
+[40] generics_0.1.0      jsonlite_1.7.2      magrittr_2.0.1     
+[43] patchwork_1.1.1     Matrix_1.3-2        Rcpp_1.0.7         
+[46] munsell_0.5.0       fansi_0.4.2         lifecycle_1.0.0    
+[49] stringi_1.7.4       whisker_0.4         yaml_2.2.1         
+[52] snakecase_0.11.0    grid_4.0.2          promises_1.2.0.1   
+[55] crayon_1.4.1        lattice_0.20-41     haven_2.3.1        
+[58] splines_4.0.2       hms_1.0.0           knitr_1.31         
+[61] pillar_1.6.1        reprex_2.0.0        glue_1.4.2         
+[64] evaluate_0.14       modelr_0.1.8        vctrs_0.3.8        
+[67] httpuv_1.5.5        cellranger_1.1.0    gtable_0.3.0       
+[70] assertthat_0.2.1    xfun_0.23           tweedie_2.3.3      
+[73] xtable_1.8-4        later_1.1.0.1       viridisLite_0.3.0  
+[76] ellipsis_0.3.2     </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
