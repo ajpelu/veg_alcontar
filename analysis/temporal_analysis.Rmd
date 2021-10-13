@@ -1,0 +1,755 @@
+---
+title: "temporal_analysis"
+author: "ajpelu"
+date: "2021-10-07"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(mgcv)
+library(gratia)
+library(itsadug)
+library(kableExtra)
+library(tidymv)
+library(broom)
+library(performance)
+```
+
+- Read data 
+- Rename the levels of *zona*: 
+
+  - **Pyric herbivorism** (***HP***, from spanish *Herbivorismo pírico*): old *Quemado con pastoreo*
+  - **Prescribed Fires** (***QP***, from spanish *Quemas Prescritas*): old *Quemado sin pastoreo*
+  
+
+```{r read-data, echo=TRUE}
+veg_raw <- readxl::read_excel(here::here("data/Datos_congreso_AEET.xlsx")) %>% 
+  janitor::clean_names() 
+
+autumn_fire <- lubridate::ymd("2018-12-18")
+grazing_start <- lubridate::ymd("2019-10-01")
+
+veg <- veg_raw %>% 
+  rename(fecha = fecha_muestreos, 
+         shan = i_shannon, 
+         consumo = tasa_consumo, 
+         riq = riqueza) %>% 
+  mutate(treat = as.factor(case_when(
+    zona == "Quemado con pastoreo" ~ "HP", 
+    TRUE ~ "QP"
+  ))) %>% 
+  mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(quadrat = as.factor(quadrat)) %>% 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  ))
+ 
+```
+
+  
+- Explore the data 
+
+```{r}
+xtabs(~treat+fecha, data = veg)
+```
+ 
+# Statistical analysis
+
+- We used Generalizad Additive Mixed Models (GAMM) to evaluate the effects of treatment (Prescribed Fires *vs.* Pyric herbivorism) on the evolution of plant cover, phytovolumen and diversity indices (Shannon, Richness). 
+
+- We modelling the date after fire (in months; *meses*) as smoother (`s(meses)`)
+
+- Date after fire and treatment was include as fixed effects 
+
+- Quadrats were included as random 
+
+- Different distribution family (*e.g.* Poisson, Negative Binomial, etc) were used. 
+
+# Richness
+## Model
+```{r gamm-riq, echo=TRUE}
+f <- as.formula(riq ~ s(meses, by = treat, k=5, bs="cs") + treat)
+
+m <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = poisson)
+```
+
+```{r, echo=FALSE}
+performance::check_distribution(m$gam)
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r auxR}
+# Modify the itsadug::gamtab, to export as data.frame
+gamtab2 <- function (model, caption = " ", label = "tab.gam", pnames = NA, 
+    snames = NA, ptab = NA, stab = NA, ...) 
+{
+    if (!requireNamespace("xtable", quietly = TRUE)) {
+        stop("Package 'xtable' needed for this function to work. Please install it.", 
+            call. = FALSE)
+    }
+    sum.gam <- model
+    if (!inherits(model, "summary.gam")) {
+        sum.gam <- summary(model)
+    }
+    if (is.na(ptab[1])) {
+        ptab = as.data.frame(sum.gam$p.table, stringsAsFactors = FALSE)
+    }
+    if (is.na(stab[1])) {
+        stab = as.data.frame(sum.gam$s.table, stringsAsFactors = FALSE)
+    }
+    if (!is.na(pnames[1])) {
+        rownames(ptab) = pnames
+    }
+    if (!is.na(snames[1])) {
+        rownames(stab) = snames
+    }
+    colnames(ptab)[4] = "p-value"
+    colnames(ptab)[3] = "t-value"
+    ptab.cnames = colnames(ptab)
+    stab.cnames = colnames(stab)
+    stab.cnames[3] = "F-value"
+    colnames(ptab) = c("A", "B", "C", "D")
+    if (ncol(stab) != 0) {
+        colnames(stab) = colnames(ptab)
+    }
+    tab = rbind(ptab, stab)
+    colnames(tab) = ptab.cnames
+    tab = round(tab, 4)
+    m = data.frame(matrix(0, nrow(tab), ncol(tab)), stringsAsFactors = FALSE)
+    for (i in 1:nrow(tab)) {
+        for (j in 1:4) {
+            if ((j == 4) & (tab[i, j] < 1e-04)) {
+                m[i, j] = "< 0.0001"
+            }
+            else {
+                m[i, j] = sprintf("%3.4f", tab[i, j])
+            }
+        }
+    }
+    colnames(m) = colnames(tab)
+    rownames(m) = rownames(tab)
+    tab = m
+    tab2 = rbind(c(ptab.cnames), tab[1:nrow(ptab), ])
+    if (nrow(stab) > 0) {
+        tab2 = rbind(tab2, c(stab.cnames), tab[(nrow(ptab) + 
+            1):nrow(tab), ])
+    }
+    if (nrow(stab)) {
+        rownames(tab2)[(nrow(ptab) + 2)] = "B. smooth terms"
+    }
+    rownames(tab2)[1] = "A. parametric coefficients"
+    for (i in 1:nrow(tab2)) {
+        if (tab2[i, 4] == "0") 
+            tab2[i, 4] = "< 0.0001"
+        if (length(grep("\\.", tab2[i, 2])) == 0) 
+            tab2[i, 2] = paste(tab2[i, 2], ".0000", sep = "")
+    }
+
+return(as.data.frame(tab2))
+}
+
+
+
+gamR2 <- function(gam) {
+  # see https://www.researchgate.net/post/How-can-I-get-the-adjusted-r-squared-value-of-GAM-model
+  R2 <- 1 - ((sum(residuals(gam)^2)) /
+    (sum((gam$y - mean(gam$y))^2)))
+  R2adj <- 1 - ((1 - R2) * (length(gam$y) - 1) /
+    (length(gam$y) - length(gam$coefficients) - 1))
+  a <- data.frame(R2, R2adj)
+  return(a)
+}
+```
+
+```{r tab-modriq}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+
+# Get parameters 
+smooth.riq <- broom::tidy(m$gam) %>% mutate(var = "Richness")
+param.riq <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Richness")
+```
+
+```{r}
+performance.riq <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Poisson")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+ transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Richness") + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg, aes(x=meses, y=riq, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+  
+```
+
+
+
+# Shannon 
+## Model
+```{r, echo=TRUE}
+veg$shannon <- abs(veg$shan)
+
+f <- as.formula(shannon ~ s(meses, by = treat, k=5, bs="cs") + treat)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.shannon <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Tweedie")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.shannon<- broom::tidy(m$gam) %>% mutate(var = "Shannon")
+param.shannon <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Shannon")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Shannon") + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg, 
+             aes(x=meses, y=shannon, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+  
+```
+
+
+
+# Total Cover 
+## Model
+```{r, echo=TRUE}
+f <- as.formula(rec_tot ~ s(meses, by = treat, k=5, bs="cs") + treat)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = nb)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.rec_tot <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Negative Binomial")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.rec_tot <- broom::tidy(m$gam) %>% mutate(var = "Total cover")
+param.rec_tot <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Total cover")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Total Cover (%)") + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg, 
+             aes(x=meses, y=rec_tot, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+  
+```
+
+
+# Vegetation Cover 
+## Model
+```{r echo=TRUE}
+f <- as.formula(rec_veg ~ s(meses, by = treat, k=5, bs="cs") + treat)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw) 
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.rec_veg <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Tweedie")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+```{r}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.rec_veg <- broom::tidy(m$gam) %>% mutate(var = "Veg. cover")
+param.rec_veg <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Veg. cover")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Veg Cover (%)") + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg, 
+             aes(x=meses, y=rec_veg, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+```
+
+# Phytovol 
+## Model
+```{r echo=TRUE}
+veg$fitovolT <- sqrt(veg$fitovol)
+f <- as.formula(fitovolT ~ s(meses, by = treat, k=5, bs="cs") + treat)
+m <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.fitovol <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Tweedie")
+```
+
+
+### Model validation
+
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.fitovol<- broom::tidy(m$gam) %>% mutate(var = "Fitovol")
+param.fitovol <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Fitovol")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat,
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab(expression(sqrt(fitol))) + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg, 
+             aes(x=meses, y=fitovolT, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+  
+```
+
+
+# Phytovol (I) 
+## Model
+```{r echo=TRUE}
+
+f <- as.formula(fitovol ~ s(meses, by = treat, k=5, bs="cs") + treat)
+m <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.fitovol1 <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Tweedie")
+```
+
+
+### Model validation
+
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.fitovol1<- broom::tidy(m$gam) %>% mutate(var = "Fitovol")
+param.fitovol1 <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Fitovol")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat,
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Phytovol") + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg, 
+             aes(x=meses, y=fitovol, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+  
+```
+
+
+# Tasa consumo 
+## Model
+- Caution, there is an outlier . 
+
+```{r, echo=TRUE}
+veg %>% filter(consumo > 8)
+```
+
+
+```{r echo=TRUE}
+f <- as.formula(consumo ~ s(meses, by = treat, k=5, bs="cs") + treat)
+
+veg.out <- veg %>% filter(consumo < 8)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg.out)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.consumo <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Gaussian")
+```
+
+### Model validation
+
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.consumo <- broom::tidy(m$gam) %>% mutate(var = "Tasa Consumo")
+param.consumo <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Tasa Consumo")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Consumo") + 
+  xlab("Time (months)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg.out, 
+             aes(x=meses, y=consumo, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter())
+```
+
+
+# General overview 
+
+```{r}
+p.terms <- 
+  bind_rows(param.riq, 
+            param.shannon, 
+            param.rec_tot,
+            param.rec_veg,
+            param.fitovol, 
+            param.fitovol1,
+            param.consumo) %>% 
+  relocate(var) %>%
+  mutate(
+    term = case_when(
+      term == "(Intercept)" ~ "treatHP", 
+      TRUE ~ term)
+    )
+```
+
+- Parametric terms 
+
+```{r}
+p.terms %>% 
+  mutate(p = 
+           case_when(
+             p.value < 0.0001 ~ "< 0.0001",
+             TRUE ~ as.character(round(p.value,4))
+           )) %>% 
+  dplyr::select(-p.value) %>% 
+  kbl(col.names = 
+        c("Variable", "term", "Estimate", "SE", "F", "p"), 
+      align = c("ccrrrr"),
+      digits = c(0,0,3,3,2,4)) %>% 
+  kable_paper(full_width = F) 
+```
+
+
+- Smooth terms
+```{r}
+s.terms <- 
+  bind_rows(smooth.riq,
+            smooth.shannon, 
+            smooth.rec_tot,
+            smooth.rec_veg,
+            smooth.fitovol, 
+            smooth.fitovol1,
+            smooth.consumo) %>% 
+  relocate(var) 
+```
+
+```{r}
+s.terms %>% 
+  mutate(p = 
+           case_when(
+             p.value < 0.0001 ~ "< 0.0001",
+             TRUE ~ as.character(p.value)
+           )) %>% 
+  dplyr::select(-p.value) %>% 
+  kbl(col.names = 
+        c("Variable", "term", "edf", "ref.df", "F", "p"), 
+      digits = c(0,0,3,3,2,4)) %>% 
+  kable_paper(full_width = F) 
+```
+
+
+# Some resources 
+
+- [Plots for Generalized Additive Models](https://doi.org/10.1080/03610926.2011.628772)
+- [Family distributions for GAMs](https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/family.mgcv.html)
+- [Tidy Model Visualisation for Generalised Additive Models](https://stefanocoretta.github.io/tidymv/index.html)
+- [Course about GAMs](https://noamross.github.io/gams-in-r-course)
+- Hierarchical generalized additive models in ecology: an introduction with mgcv [paper](https://peerj.com/articles/6876/)
+- [GAMs](https://m-clark.github.io/generalized-additive-models) 
+
+
+
+
