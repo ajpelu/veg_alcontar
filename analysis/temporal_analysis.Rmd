@@ -207,7 +207,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.riq <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat, 
@@ -228,7 +228,8 @@ plot_smooths(
   geom_point(data = veg, aes(x=meses, y=riq, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
-  
+
+plot.riq
 ```
 
 
@@ -281,7 +282,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.shannon <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat, 
@@ -303,6 +304,8 @@ plot_smooths(
              aes(x=meses, y=shannon, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
+
+plot.shannon
   
 ```
 
@@ -354,7 +357,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.rec_total <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat, 
@@ -376,7 +379,8 @@ plot_smooths(
              aes(x=meses, y=rec_tot, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
-  
+
+plot.rec_total
 ```
 
 
@@ -425,7 +429,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.rec_veg <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat, 
@@ -447,6 +451,8 @@ plot_smooths(
              aes(x=meses, y=rec_veg, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
+
+plot.rec_veg
 ```
 
 # Phytovol 
@@ -497,7 +503,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.fitovolsqrt <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat,
@@ -519,7 +525,8 @@ plot_smooths(
              aes(x=meses, y=fitovolT, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
-  
+
+plot.fitovolsqrt
 ```
 
 
@@ -571,7 +578,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.fitovol <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat,
@@ -593,7 +600,8 @@ plot_smooths(
              aes(x=meses, y=fitovol, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
-  
+
+plot.fitovol 
 ```
 
 
@@ -652,7 +660,7 @@ gratia::draw(m$gam)
 ```{r}
 colores <- c("#488f31", "#f18255")
 
-plot_smooths(
+plot.consumo <- plot_smooths(
   model = m$gam,
   series = meses, 
   comparison = treat
@@ -673,6 +681,8 @@ plot_smooths(
              aes(x=meses, y=consumo, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter())
+
+plot.consumo
 ```
 
 
@@ -738,6 +748,16 @@ s.terms %>%
         c("Variable", "term", "edf", "ref.df", "F", "p"), 
       digits = c(0,0,3,3,2,4)) %>% 
   kable_paper(full_width = F) 
+```
+
+# All plots 
+
+```{r}
+library(patchwork)
+```
+
+```{r, fig.height=10}
+plot.riq + plot.shannon + plot.rec_total + plot.rec_veg + plot.fitovolsqrt + plot.consumo + plot_layout(guides = "collect", nrow = 3) & theme(legend.position = "bottom")
 ```
 
 
