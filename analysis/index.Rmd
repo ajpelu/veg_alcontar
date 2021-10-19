@@ -11,3 +11,4 @@ editor_options:
 # Analysis of Vegetation parameters of Andalusia EP (Alcóntar)
 
 - [Comparing evolution of vegetation parameters between pyric herbivorism and prescribed fires](temporal_analysis.html)
+- [ANOVAs](antes-despues.html)

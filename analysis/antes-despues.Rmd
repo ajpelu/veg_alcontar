@@ -1,0 +1,135 @@
+---
+title: "antes-despues"
+author: "ajpelu"
+date: "2021-10-19"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(mgcv)
+library(gratia)
+library(itsadug)
+library(kableExtra)
+library(tidymv)
+library(broom)
+library(performance)
+library(patchwork)
+library(gtsummary)
+library(plotrix)
+```
+
+- Read data 
+- Rename the levels of *zona*: 
+
+  - **Pyric herbivorism** (***HP***, from spanish *Herbivorismo pírico*): old *Quemado con pastoreo*
+  - **Prescribed Fires** (***QP***, from spanish *Quemas Prescritas*): old *Quemado sin pastoreo*
+  
+
+```{r read-data, echo=TRUE}
+veg_raw <- readxl::read_excel(here::here("data/Datos_congreso_AEET.xlsx")) %>% 
+  janitor::clean_names() 
+
+autumn_fire <- lubridate::ymd("2018-12-18")
+grazing_start <- lubridate::ymd("2019-10-01")
+
+veg <- veg_raw %>% 
+  rename(fecha = fecha_muestreos, 
+         shan = i_shannon, 
+         consumo = tasa_consumo, 
+         riq = riqueza) %>% 
+  mutate(treat = as.factor(case_when(
+    zona == "Quemado con pastoreo" ~ "HP", 
+    TRUE ~ "QP"
+  ))) %>% 
+  mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(quadrat = as.factor(quadrat)) %>% 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  ))
+
+# Subset of data (pre/post) 
+ad <- veg %>% filter(meses %in% c(-1, 22)) %>% 
+  mutate(shannon = abs(shan))
+```
+
+
+
+# Riqueza 
+
+```{r}
+m.riq <- aov(riq~meses*treat, data = ad)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+m.riq %>% broom::tidy() %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+# Shannon 
+```{r}
+m.sha <- aov(shan~meses*treat, data = ad)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+m.sha %>% broom::tidy() %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+# Recubrimiento Total 
+```{r}
+m.rec_tot <- aov(rec_tot~meses*treat, data = ad)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+m.rec_tot %>% broom::tidy() %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+# Recubrimiento Veg 
+```{r}
+m.rec_veg <- aov(rec_veg~meses*treat, data = ad)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+m.rec_veg %>% broom::tidy() %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+# Fitovol 
+```{r}
+m.fitovol <- aov(fitovol~meses*treat, data = ad)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+m.fitovol %>% broom::tidy() %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+
+
+
