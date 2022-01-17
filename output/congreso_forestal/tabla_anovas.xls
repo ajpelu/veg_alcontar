@@ -1,0 +1,13 @@
+﻿var,parametric terms,df,F,p.value
+Richness,treat,1,5.836,0.016
+Richness,rango,3,1.88,0.132
+Richness,treat:rango,3,0.116,0.951
+Shannon,treat,1,5.391,0.021
+Shannon,rango,3,6.971,0
+Shannon,treat:rango,3,1.302,0.273
+Cobertura total,treat,1,0.034,0.853
+Cobertura total,rango,3,4.781,0.003
+Cobertura total,treat:rango,3,0.063,0.979
+Fitovolumen,treat,1,0.755,0.385
+Fitovolumen,rango,3,17.379,0
+Fitovolumen,treat:rango,3,0.207,0.892

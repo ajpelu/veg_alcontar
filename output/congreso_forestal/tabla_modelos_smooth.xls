@@ -1,0 +1,25 @@
+﻿var,term,edf,ref.df,statistic,p.value
+Richness,s(meses):treatHP,1.601,4,4.101,0
+Richness,s(meses):treatQP,3.456,4,6.405,0
+Richness,s(meses):rangoespartal denso,2.756,4,7.505,0
+Richness,s(meses):rangomat. claro,0,4,0,0.992
+Richness,s(meses):rangomat. denso,0,4,0,0.501
+Richness,s(meses):rangomat. medio,0,4,0,0.736
+Shannon,s(meses):treatHP,2.317,4,2.168,0.013
+Shannon,s(meses):treatQP,2.292,4,3.626,0.001
+Shannon,s(meses):rangoespartal denso,3.082,4,20.073,0
+Shannon,s(meses):rangomat. claro,0,4,0,0.575
+Shannon,s(meses):rangomat. denso,1.842,4,2.7,0.002
+Shannon,s(meses):rangomat. medio,0,4,0,0.528
+Cobertura total,s(meses):treatHP,3.243,4,5.476,0
+Cobertura total,s(meses):treatQP,3.791,4,21.803,0
+Cobertura total,s(meses):rangoespartal denso,3.897,4,33.209,0
+Cobertura total,s(meses):rangomat. claro,0,4,0,0.172
+Cobertura total,s(meses):rangomat. denso,3.8,4,25.944,0
+Cobertura total,s(meses):rangomat. medio,1.914,4,1.107,0.088
+Fitovolumen,s(meses):treatHP,3.575,4,29.511,0
+Fitovolumen,s(meses):treatQP,3.777,4,42.687,0
+Fitovolumen,s(meses):rangoespartal denso,3.796,4,19.494,0
+Fitovolumen,s(meses):rangomat. claro,0,4,0,0.783
+Fitovolumen,s(meses):rangomat. denso,3.758,4,22.149,0
+Fitovolumen,s(meses):rangomat. medio,0,4,0,0.736

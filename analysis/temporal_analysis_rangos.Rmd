@@ -1,0 +1,735 @@
+---
+title: "Temporal evolution of veg. parameters by rangos (Spanish)"
+author: "Antonio J. Pérez-Luque"
+date: "2022-01-17"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+
+## Introdución y Objetivos  
+
+- Analizar la evolución de los parámetros de vegetación a lo largo del tiempo, entre dos tratamientos: Herbivorísmo pírico (***HP***) y Quemas Prescritas (***QP***), considerando los diferentes rangos 
+
+- Usamos solamente datos de la quema de Otoño 
+
+- Diseño: 
+
+  - tratamiento: HP y QP
+  - rangos
+  - 6 fechas de muestreo 
+  - 32 plots por tratamiento 
+  
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(mgcv)
+library(gratia)
+library(itsadug)
+library(kableExtra)
+library(tidymv)
+library(broom)
+library(performance)
+library(patchwork)
+library(gtsummary)
+library(plotrix)
+```
+
+```{r preparaDatos}
+veg_raw <- readxl::read_excel(here::here("data/Datos_veg_congr_for_2022.xlsx")) %>% 
+  janitor::clean_names() 
+
+autumn_fire <- lubridate::ymd("2018-12-18")
+
+veg <- veg_raw %>% 
+  rename(fecha = fecha_muestreos,
+         cob = rec_tot,
+         shan = i_shannon, 
+         riq = riqueza, 
+         rango = rango_infoca) %>% 
+  mutate(shan = abs(shan)) %>% 
+  mutate(rango = as.factor(rango)) %>% 
+  mutate(treat = as.factor(case_when(
+    zona == "Quemado con pastoreo" ~ "HP", 
+    TRUE ~ "QP"
+  ))) %>% 
+  mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(quadrat = as.factor(quadrat)) %>% 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  )) %>% 
+  mutate(rango = as.factor(case_when(
+    rango == 1 ~ "mat. claro",
+    rango == 2 ~ "mat. medio",
+    rango == 3 ~ "espartal denso",
+    rango == 4 ~ "mat. denso"
+  )))
+```
+
+
+```{r}
+xtabs(~treat+rango, data = veg)
+```
+ 
+## Análisis estadístico 
+
+- Se utilizaron Modelos Mixtos Aditivos Generalizados (GAMM) para evaluar los efectos del tratamiento (Quemas Prescritos *vs.* Herbivorismo Pírico) sobre la evolución de la cobertura vegetal, el fitovolumen y los índices de diversidad (Shannon, Riqueza).
+
+
+# Riqueza
+## Modelo
+```{r gamm-riq, echo=TRUE}
+f <- as.formula(
+  riq ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+fi <- as.formula(
+  riq ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    treat * rango
+)
+
+fni <- as.formula(
+  riq ~ 
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+
+mfull <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = poisson,
+          method = "ML")
+
+mi <- gamm(fi,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = poisson,
+          method = "ML")
+
+mni <- gamm(fni,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = poisson,
+          method = "ML")
+
+```
+
+- Seleccionamos los suavizados, y elegimos el modelo con menor AIC
+
+```{r}
+aic.riq <- AIC(mfull$lme, mi$lme, mni$lme) 
+aic.riq %>% as.data.frame() %>% arrange(AIC) %>% 
+  kbl() %>% kable_styling()
+m <- mni
+```
+
+```{r, echo=FALSE}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.riq <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Poisson")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+```{r auxR}
+# Modify the itsadug::gamtab, to export as data.frame
+gamtab2 <- function (model, caption = " ", label = "tab.gam", pnames = NA, 
+    snames = NA, ptab = NA, stab = NA, ...) 
+{
+    if (!requireNamespace("xtable", quietly = TRUE)) {
+        stop("Package 'xtable' needed for this function to work. Please install it.", 
+            call. = FALSE)
+    }
+    sum.gam <- model
+    if (!inherits(model, "summary.gam")) {
+        sum.gam <- summary(model)
+    }
+    if (is.na(ptab[1])) {
+        ptab = as.data.frame(sum.gam$p.table, stringsAsFactors = FALSE)
+    }
+    if (is.na(stab[1])) {
+        stab = as.data.frame(sum.gam$s.table, stringsAsFactors = FALSE)
+    }
+    if (!is.na(pnames[1])) {
+        rownames(ptab) = pnames
+    }
+    if (!is.na(snames[1])) {
+        rownames(stab) = snames
+    }
+    colnames(ptab)[4] = "p-value"
+    colnames(ptab)[3] = "t-value"
+    ptab.cnames = colnames(ptab)
+    stab.cnames = colnames(stab)
+    stab.cnames[3] = "F-value"
+    colnames(ptab) = c("A", "B", "C", "D")
+    if (ncol(stab) != 0) {
+        colnames(stab) = colnames(ptab)
+    }
+    tab = rbind(ptab, stab)
+    colnames(tab) = ptab.cnames
+    tab = round(tab, 4)
+    m = data.frame(matrix(0, nrow(tab), ncol(tab)), stringsAsFactors = FALSE)
+    for (i in 1:nrow(tab)) {
+        for (j in 1:4) {
+            if ((j == 4) & (tab[i, j] < 1e-04)) {
+                m[i, j] = "< 0.0001"
+            }
+            else {
+                m[i, j] = sprintf("%3.4f", tab[i, j])
+            }
+        }
+    }
+    colnames(m) = colnames(tab)
+    rownames(m) = rownames(tab)
+    tab = m
+    tab2 = rbind(c(ptab.cnames), tab[1:nrow(ptab), ])
+    if (nrow(stab) > 0) {
+        tab2 = rbind(tab2, c(stab.cnames), tab[(nrow(ptab) + 
+            1):nrow(tab), ])
+    }
+    if (nrow(stab)) {
+        rownames(tab2)[(nrow(ptab) + 2)] = "B. smooth terms"
+    }
+    rownames(tab2)[1] = "A. parametric coefficients"
+    for (i in 1:nrow(tab2)) {
+        if (tab2[i, 4] == "0") 
+            tab2[i, 4] = "< 0.0001"
+        if (length(grep("\\.", tab2[i, 2])) == 0) 
+            tab2[i, 2] = paste(tab2[i, 2], ".0000", sep = "")
+    }
+
+return(as.data.frame(tab2))
+}
+
+
+
+gamR2 <- function(gam) {
+  # see https://www.researchgate.net/post/How-can-I-get-the-adjusted-r-squared-value-of-GAM-model
+  R2 <- 1 - ((sum(residuals(gam)^2)) /
+    (sum((gam$y - mean(gam$y))^2)))
+  R2adj <- 1 - ((1 - R2) * (length(gam$y) - 1) /
+    (length(gam$y) - length(gam$coefficients) - 1))
+  a <- data.frame(R2, R2adj)
+  return(a)
+}
+
+
+library(emmeans)
+tabla_postHoc <- function(modelo){
+  posthoc <- emmeans(modelo, ~ meses * treat * rango)
+  contrast(posthoc, "consec", simple = "each", combine = TRUE,
+           adjust = "tukey") %>% 
+  kbl(digits = 4) %>% 
+    kable_paper("hover", full_width = F)
+}
+```
+
+
+```{r tab-modriq}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,10), bold = T)
+
+# Get parameters 
+smooth.riq <- broom::tidy(m$gam) %>% mutate(var = "Richness")
+param.riq <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Richness")
+
+anova.riq <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Richness")
+```
+
+
+```{r}
+dfp.riq <- get_gam_predictions(m$gam, series = meses)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot.riq <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  facet_terms = rango, 
+  comparison = treat, 
+ transform = exp
+) + 
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Riqueza (nº especies)") + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank(),
+        strip.background = element_rect(fill="white")) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_point(data = veg, aes(x=meses, y=riq, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) 
+```
+
+
+```{r plot_riqueza, dev = c('png','jpeg','tiff')}
+ggsave(plot.riq, 
+       filename = here::here("output/congreso_forestal/riqueza.jpg"), 
+       height = 14, width = 12, units = "cm", dpi = "print")
+```
+
+
+# Diversidad
+## Modelo
+```{r gamm-shan, echo=TRUE}
+f <- as.formula(
+  shan ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+fi <- as.formula(
+  shan ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    treat * rango
+)
+
+fni <- as.formula(
+  shan ~ 
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+
+mfull <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw,
+          method = "ML")
+
+mi <- gamm(fi,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw,
+          method = "ML")
+
+mni <- gamm(fni,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw,
+          method = "ML")
+
+```
+
+- Seleccionamos los suavizados, y elegimos el modelo con menor AIC
+
+```{r}
+aic.shan <- AIC(mfull$lme, mi$lme, mni$lme) 
+aic.shan %>% as.data.frame() %>% arrange(AIC) %>% 
+  kbl() %>% kable_styling()
+m <- mni
+```
+
+```{r, echo=FALSE}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.shan <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Tweedie")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+```{r tab-modshan}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,10), bold = T)
+
+# Get parameters 
+smooth.shan <- broom::tidy(m$gam) %>% mutate(var = "Shannon")
+param.shan <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Shannon")
+
+anova.shan <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Shannon")
+```
+
+```{r}
+dfp.shan <- get_gam_predictions(m$gam, series = meses)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot.shan <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  facet_terms = rango, 
+  comparison = treat, 
+ transform = exp
+) + 
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Índice de Shannon") + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank(),
+        strip.background = element_rect(fill="white")) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_point(data = veg, aes(x=meses, y=shan, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) 
+```
+
+```{r plot_shanon, dev = c('png','jpeg')}
+ggsave(plot.shan, 
+       filename = here::here("output/congreso_forestal/shannon.jpg"), 
+       height = 14, width = 12, units = "cm", dpi = "print")
+```
+
+# Cobertura
+## Modelo
+```{r gamm-cob, echo=TRUE}
+f <- as.formula(
+  cob ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+fi <- as.formula(
+  cob ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    treat * rango
+)
+
+fni <- as.formula(
+  cob ~ 
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+
+mfull <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = nb,
+          method = "ML")
+
+mi <- gamm(fi,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = nb,
+          method = "ML")
+
+mni <- gamm(fni,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = nb,
+          method = "ML")
+
+```
+
+- Seleccionamos los suavizados, y elegimos el modelo con menor AIC
+
+```{r}
+aic.rectot <- AIC(mfull$lme, mi$lme, mni$lme) 
+aic.rectot %>% as.data.frame() %>% arrange(AIC) %>% 
+  kbl() %>% kable_styling()
+m <- mni
+```
+
+```{r, echo=FALSE}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.rectot <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Negative Binomial")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+```{r tab-modrectot}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,10), bold = T)
+
+# Get parameters 
+smooth.rectot <- broom::tidy(m$gam) %>% mutate(var = "Cobertura total")
+param.rectot <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Cobertura total")
+
+anova.rectot <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Cobertura total")
+```
+
+```{r}
+dfp.rectot <- get_gam_predictions(m$gam, series = meses)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot.rectot <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  facet_terms = rango, 
+  comparison = treat, 
+ transform = exp
+) + 
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Recubrimiento Total (%)") + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  ylim(0,125) + 
+  theme(legend.position = "top",
+        panel.grid = element_blank(),
+        strip.background = element_rect(fill="white")) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_point(data = veg, aes(x=meses, y=cob, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) 
+```
+
+```{r plot_rectot, dev = c('png','jpeg')}
+ggsave(plot.rectot, 
+       filename = here::here("output/congreso_forestal/cobertura.jpg"), 
+       height = 14, width = 12, units = "cm", dpi = "print")
+```
+
+# Fitovolumen
+## Modelo
+```{r gamm-fitovol, echo=TRUE}
+f <- as.formula(
+  fitovol ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+fi <- as.formula(
+  fitovol ~ 
+    s(meses, by = interaction(treat, rango), k = 5, bs = "cs") +
+    treat * rango
+)
+
+fni <- as.formula(
+  fitovol ~ 
+    s(meses, by = treat, k = 5, bs = "cs") + 
+    s(meses, by = rango, k = 5, bs = "cs") + 
+    treat * rango
+)
+
+
+mfull <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw,
+          method = "ML")
+
+mi <- gamm(fi,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw,
+          method = "ML")
+
+mni <- gamm(fni,
+          random = list(quadrat = ~1), 
+          data = veg, 
+          family = tw,
+          method = "ML")
+
+```
+
+- Seleccionamos los suavizados, y elegimos el modelo con menor AIC
+
+```{r}
+aic.fitovol <- AIC(mfull$lme, mi$lme, mni$lme) 
+aic.fitovol %>% as.data.frame() %>% arrange(AIC) %>% 
+  kbl() %>% kable_styling()
+m <- mni
+```
+
+```{r, echo=FALSE}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.fitovol <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Tweedie")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+```{r tab-modfitovol}
+gamtab2(m$gam) %>% 
+  kbl(col.names = NULL) %>% 
+  kable_paper(full_width = F) %>%
+  row_spec(c(1,10), bold = T)
+
+# Get parameters 
+smooth.fitovol <- broom::tidy(m$gam) %>% mutate(var = "Fitovolumen")
+param.fitovol <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Fitovolumen")
+
+anova.fitovol <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Fitovolumen")
+```
+
+```{r}
+dfp.rectot <- get_gam_predictions(m$gam, series = meses)
+```
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot.fitovol <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  facet_terms = rango, 
+  comparison = treat, 
+ transform = exp
+) + 
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab(expression(Fitovolumen~(m^3~ha^{-1}))) + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank(),
+        strip.background = element_rect(fill="white")) +
+  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_point(data = veg, aes(x=meses, y=fitovol, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) 
+```
+
+```{r plot_fitovol, dev = c('png','jpeg')}
+ggsave(plot.fitovol, 
+       filename = here::here("output/congreso_forestal/fitovol.jpg"), 
+       height = 14, width = 12, units = "cm", dpi = "print")
+```
+
+## Overall
+
+- Smooth terms 
+```{r}
+s.terms <- 
+  bind_rows(smooth.riq,
+            smooth.shan, 
+            smooth.rectot,
+            smooth.fitovol) %>% 
+  relocate(var) %>% 
+  mutate(p.value = round(p.value,3),
+         statistic = round(statistic,3),
+         edf = round(edf,3))
+
+s.terms %>% write_excel_csv(here::here("output/congreso_forestal/tabla_modelos_smooth.xls"))  
+
+
+s.terms %>% 
+  mutate(p = 
+           case_when(
+             p.value < 0.001 ~ "< 0.001",
+             TRUE ~ as.character(p.value)
+           )) %>% 
+  dplyr::select(-p.value) %>% 
+  kbl(col.names = 
+        c("Variable", "term", "edf", "ref.df", "F", "p"), 
+      digits = c(0,0,3,3,2,4)) %>% 
+  kable_paper(full_width = F) 
+```
+ 
+- Parametrics terms
+
+```{r}
+anovas <- rbind(
+  anova.riq %>% rownames_to_column(var = "parametric terms") %>% relocate(var),
+  anova.shan %>% rownames_to_column(var = "parametric terms") %>% relocate(var),
+  anova.rectot %>% rownames_to_column(var = "parametric terms") %>% relocate(var),
+  anova.fitovol %>% rownames_to_column(var = "parametric terms") %>% relocate(var)
+) %>% mutate(`F` = round(`F`,3),
+         p.value = round(`p-value`,3)) %>% 
+  dplyr::select(-`p-value`) 
+
+anovas %>% 
+    mutate(p.value = 
+           case_when(
+             p.value < 0.001 ~ "< 0.001",
+             TRUE ~ as.character(p.value)
+           )) %>% 
+  kbl(col.names = 
+        c("Variable", "param. terms", "df", "F", "p.value")) %>% 
+  kable_paper(full_width = F) 
+
+
+anovas %>% write_excel_csv(here::here("output/congreso_forestal/tabla_anovas.xls"))
+  
+```
+
+
+```{r}
+r2summary <- rbind(
+cbind(performance.riq, variable = "Richness") %>% 
+  dplyr::select(-Score_log, -Score_spherical),
+cbind(performance.shan, variable = "Shannon"),
+cbind(performance.rectot, variable = "Cobertura total") %>% 
+  dplyr::select(-Score_log, -Score_spherical),
+cbind(performance.fitovol, variable = "Fitovol")
+)
+
+aic_summary <- rbind(
+aic.riq %>% filter(AIC == min(AIC)) %>% mutate(variable = "Richness"),
+aic.shan %>% filter(AIC == min(AIC)) %>% mutate(variable = "Shannon"),
+aic.rectot %>% filter(AIC == min(AIC)) %>% mutate(variable = "Cobertura total"),
+aic.fitovol %>% filter(AIC == min(AIC)) %>% mutate(variable = "Fitovol")
+) 
+
+rownames(aic_summary) <- NULL
+
+model_summary <- r2summary %>% 
+  inner_join(aic_summary) %>% 
+  dplyr::select(variable, R2, AIC, dist) 
+
+model_summary %>% write_excel_csv(here::here("output/congreso_forestal/tabla_modelos_resumen.xls"))
+
+model_summary %>% 
+  kbl(col.names = 
+        c("Variable", "R2", "AIC", "Model distribution"), 
+      digits = c(0,3,2,0)) %>% 
+  kable_paper(full_width = F) 
+
+```
+
