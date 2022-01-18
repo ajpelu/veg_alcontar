@@ -72,7 +72,7 @@ veg <- veg_raw %>%
     rango == 3 ~ "Espartal denso",
     rango == 4 ~ "Matorral denso"
   ))) %>% 
-  mutate(rango = fct_relevel(rango, c("Matorral claro","Matorral denso","Matorral medio","Espartal denso")))
+  mutate(rango = fct_relevel(rango, c("Matorral claro","Matorral medio","Matorral denso","Espartal denso")))
 ```
 
 
