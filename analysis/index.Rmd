@@ -12,5 +12,6 @@ editor_options:
 
 - [Comparing evolution of vegetation parameters between pyric herbivorism and prescribed fires](temporal_analysis.html)
 - [Comparing evolution of vegetation parameters between pyric herbivorism and prescribed fires by Rangos (INFOCA)](temporal_analysis_rangos.html)
-- [ANOVAs](antes-despues.html)
-- [Análisis de datos ]
+- [Comparing vegetation parametes *pre-* and *post* prescibed fires (ANOVAs analysis)](antes-despues.html)
+- [Compsuption rate plot](tasa_consumo.html)
+- [Evolution of the QNDVI](ndvi_pastoreo.html)
