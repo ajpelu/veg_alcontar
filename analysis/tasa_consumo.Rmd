@@ -1,0 +1,207 @@
+---
+title: "Consumption rate"
+author: "Antonio J. Pérez-Luque"
+date: "2021-10-25"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+- Explore consumption rate 
+- Modelling using GAMM 
+- Generate plot (include the Grazing Intensity)
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(mgcv)
+library(gratia)
+library(itsadug)
+library(kableExtra)
+library(tidymv)
+library(broom)
+library(performance)
+library(patchwork)
+library(gtsummary)
+library(plotrix)
+library(lubridate)
+```
+
+
+```{r read-data, echo=TRUE}
+veg_raw <- readxl::read_excel(here::here("data/Datos_congreso_AEET.xlsx")) %>% 
+  janitor::clean_names() 
+
+autumn_fire <- lubridate::ymd("2018-12-18")
+grazing_start <- lubridate::ymd("2019-10-01")
+
+veg <- veg_raw %>% 
+  rename(fecha = fecha_muestreos, 
+         shan = i_shannon, 
+         consumo = tasa_consumo, 
+         riq = riqueza) %>% 
+  mutate(treat = as.factor(case_when(
+    zona == "Quemado con pastoreo" ~ "HP", 
+    TRUE ~ "QP"
+  ))) %>% 
+  mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(quadrat = as.factor(quadrat)) %>% 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  ))
+
+# Subset of data (pre/post) 
+ad <- veg %>% filter(meses %in% c(-1, 22)) %>% 
+  mutate(shannon = abs(shan))
+
+
+pastoreo_raw <- readxl::read_excel(here::here("data/tablas_horas_pastoreo.xlsx")) %>% 
+  janitor::clean_names() 
+```
+
+## Model
+- Caution, there is an outlier . 
+
+```{r, echo=TRUE}
+veg %>% filter(consumo > 8)
+```
+
+
+```{r, echo=TRUE}
+f <- as.formula(consumo ~ s(meses, by = treat, k=5, bs="cs") + treat)
+
+veg.out <- veg %>% filter(consumo < 8)
+ad.out <- ad %>% filter(consumo < 8)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg.out)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.consumo <- 
+  performance(m$gam) %>% as.data.frame() %>% mutate(dist = "Gaussian")
+performance.consumo
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam, scales = "fixed")
+```
+
+### Plot
+
+```{r}
+colores <- c("#488f31", "#f18255")
+
+plot.consumo <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Tasa de Consumo") + 
+  xlab("Tiempo (meses tras la quema)") +  
+  theme_bw() + 
+  theme(legend.position = "bottom",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0, color="#800909") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire,grazing_start) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  scale_x_continuous(minor_breaks = rep(1,)) + 
+  geom_point(data = veg.out, 
+             aes(x=meses, y=consumo, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4))
+
+```
+
+```{r}
+pastoreo <- pastoreo_raw %>% 
+  mutate(fecha = make_date(year, month, '01')) %>% 
+    mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(
+    meses = case_when(
+    year == 2018 ~ 0, 
+       TRUE ~ meses + 1),
+  meses.name = lubridate::month(fecha, label = TRUE, abbr = TRUE)) %>% 
+  mutate(meses.ab = substr(meses.name, 1, 1)) 
+```
+ 
+
+```{r}
+plot_pastoreo <- 
+  ggplot(pastoreo, aes(x=meses, y=sum_avg_hour)) + 
+  geom_bar(stat="identity", fill="darkgreen") + 
+  scale_y_continuous(limits = c(-2, 30)) + 
+  geom_text(data = pastoreo[pastoreo$sum_avg_hour > 0, ],
+            aes(label = round(sum_avg_hour,1)), vjust = -.5, size = 2.5) +
+  geom_text(aes(label = meses.ab), y=-1.5, size =2.5)+
+  theme_bw() + ylab("Pastoreo \n (horas mensuales)") +
+  theme(
+    panel.grid = element_blank(), 
+    axis.ticks = element_blank(), 
+    axis.text.x = element_blank()
+  ) + 
+  scale_x_continuous(position = "top") + 
+  xlab("") +
+  geom_vline(xintercept = 
+                  (lubridate::interval(autumn_fire,grazing_start) %/% months(1)) + .6,
+             linetype="dotted"
+             ) +
+  geom_vline(xintercept = 0.8, color="#800909") 
+```
+
+```{r, plot_consumo_combinado, dev=c('png', 'jpeg', 'tiff')}
+plot_pastoreo/plot.consumo + plot_layout(heights = c(.8, 2)) 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
