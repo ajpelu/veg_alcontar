@@ -67,11 +67,12 @@ veg <- veg_raw %>%
     TRUE ~ meses
   )) %>% 
   mutate(rango = as.factor(case_when(
-    rango == 1 ~ "mat. claro",
-    rango == 2 ~ "mat. medio",
-    rango == 3 ~ "espartal denso",
-    rango == 4 ~ "mat. denso"
-  )))
+    rango == 1 ~ "Matorral claro",
+    rango == 2 ~ "Matorral medio",
+    rango == 3 ~ "Espartal denso",
+    rango == 4 ~ "Matorral denso"
+  ))) %>% 
+  mutate(rango = fct_relevel(rango, c("Matorral claro","Matorral denso","Matorral medio","Espartal denso")))
 ```
 
 
@@ -133,7 +134,7 @@ mni <- gamm(fni,
 
 ```{r}
 aic.riq <- AIC(mfull$lme, mi$lme, mni$lme) 
-aic.riq %>% as.data.frame() %>% arrange(AIC) %>% 
+aic.riq %>% as.data.frame() %>% arrange(AIC) %>% rownames_to_column("model") %>% mutate(model = str_remove(model, "\\$lme")) %>% 
   kbl() %>% kable_styling()
 m <- mni
 ```
@@ -280,12 +281,14 @@ plot.riq <- plot_smooths(
   xlab("Tiempo (meses tras la quema)") + 
   theme_bw() + 
   theme(legend.position = "top",
+        legend.title = element_blank(),
         panel.grid = element_blank(),
         strip.background = element_rect(fill="white")) +
-  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 0, color="#800909") + 
   geom_point(data = veg, aes(x=meses, y=riq, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter(width = .4)) 
+plot.riq
 ```
 
 
@@ -345,7 +348,7 @@ mni <- gamm(fni,
 
 ```{r}
 aic.shan <- AIC(mfull$lme, mi$lme, mni$lme) 
-aic.shan %>% as.data.frame() %>% arrange(AIC) %>% 
+aic.shan %>% as.data.frame() %>% arrange(AIC) %>% rownames_to_column("model") %>% mutate(model = str_remove(model, "\\$lme")) %>% 
   kbl() %>% kable_styling()
 m <- mni
 ```
@@ -393,16 +396,19 @@ plot.shan <- plot_smooths(
 ) + 
   scale_colour_manual(values = colores) +
   scale_fill_manual(values = colores) +
-  ylab("Índice de Shannon") + 
+  ylab("Índice de Shannon (H')") + 
   xlab("Tiempo (meses tras la quema)") + 
   theme_bw() + 
   theme(legend.position = "top",
+        legend.title = element_blank(),
         panel.grid = element_blank(),
         strip.background = element_rect(fill="white")) +
-  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 0, color="#800909") + 
   geom_point(data = veg, aes(x=meses, y=shan, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter(width = .4)) 
+
+plot.shan
 ```
 
 ```{r plot_shanon, dev = c('png','jpeg')}
@@ -460,7 +466,7 @@ mni <- gamm(fni,
 
 ```{r}
 aic.rectot <- AIC(mfull$lme, mi$lme, mni$lme) 
-aic.rectot %>% as.data.frame() %>% arrange(AIC) %>% 
+aic.rectot %>% as.data.frame() %>% arrange(AIC) %>% rownames_to_column("model") %>% mutate(model = str_remove(model, "\\$lme")) %>% 
   kbl() %>% kable_styling()
 m <- mni
 ```
@@ -508,17 +514,19 @@ plot.rectot <- plot_smooths(
 ) + 
   scale_colour_manual(values = colores) +
   scale_fill_manual(values = colores) +
-  ylab("Recubrimiento Total (%)") + 
+  ylab("Cobertura Total (%)") + 
   xlab("Tiempo (meses tras la quema)") + 
   theme_bw() + 
-  ylim(0,125) + 
+  ylim(0,106) + 
   theme(legend.position = "top",
         panel.grid = element_blank(),
+        legend.title = element_blank(),
         strip.background = element_rect(fill="white")) +
-  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 0, color="#800909") + 
   geom_point(data = veg, aes(x=meses, y=cob, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter(width = .4)) 
+plot.rectot
 ```
 
 ```{r plot_rectot, dev = c('png','jpeg')}
@@ -576,7 +584,7 @@ mni <- gamm(fni,
 
 ```{r}
 aic.fitovol <- AIC(mfull$lme, mi$lme, mni$lme) 
-aic.fitovol %>% as.data.frame() %>% arrange(AIC) %>% 
+aic.fitovol %>% as.data.frame() %>% arrange(AIC) %>% rownames_to_column("model") %>% mutate(model = str_remove(model, "\\$lme")) %>% 
   kbl() %>% kable_styling()
 m <- mni
 ```
@@ -609,7 +617,7 @@ anova.fitovol <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = 
 ```
 
 ```{r}
-dfp.rectot <- get_gam_predictions(m$gam, series = meses)
+dfp.fitovol <- get_gam_predictions(m$gam, series = meses)
 ```
 
 ```{r}
@@ -629,11 +637,14 @@ plot.fitovol <- plot_smooths(
   theme_bw() + 
   theme(legend.position = "top",
         panel.grid = element_blank(),
+        legend.title = element_blank(),
         strip.background = element_rect(fill="white")) +
-  geom_vline(xintercept = 0.5, color="#800909") + 
+  geom_vline(xintercept = 0, color="#800909") + 
   geom_point(data = veg, aes(x=meses, y=fitovol, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter(width = .4)) 
+
+plot.fitovol
 ```
 
 ```{r plot_fitovol, dev = c('png','jpeg')}
