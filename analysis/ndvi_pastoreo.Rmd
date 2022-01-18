@@ -1,0 +1,273 @@
+---
+title: "Exploring evolution of NDVI pre and post prescribed fires"
+author: "Antonio J. Pérez Luque"
+date: "2021-10-19"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+- Explore evolution of NDVI using Sentinel2 data (see [here](https://serpam.github.io/ndvi_alcontar/index.html) for a detailed description)
+
+- Generate a plot combining QNDVI, Precipitation data, and Grazing Intensity
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(mgcv)
+library(gratia)
+library(itsadug)
+library(kableExtra)
+library(tidymv)
+library(broom)
+library(performance)
+library(patchwork)
+library(gtsummary)
+library(plotrix)
+library(tidyverse)
+library(stringr)
+library(here)
+library(DiagrammeR)
+library(plotrix)
+library(dygraphs)
+library(xts)
+library(lubridate)
+library(ISOweek)
+```
+
+```{r read-data, echo=TRUE}
+df <- read_csv(here::here("data/s2ndvi.csv")) %>% 
+  mutate(treatment = case_when(
+         str_detect(NOMBRE, "AL_PR") ~ "Grazing+Spring",
+         str_detect(NOMBRE, "AL_P_") ~ "Grazing+Autumn",
+         str_detect(NOMBRE, "AL_NP_") ~ "NoGrazing+Autumn", 
+         str_detect(NOMBRE, "AL_CON_NP") ~ "Control",
+         str_detect(NOMBRE, "AL_CON_P") ~ "Control"))
+ndvi <- df %>% filter(value >= 0)
+
+
+ndvi_avg <- ndvi %>% 
+  mutate(datew = paste(
+    year(date), 
+    paste0("W", sprintf("%02d", week(date))),
+    sep = "-")) %>% 
+  group_by(NOMBRE, treatment, datew) %>% 
+  summarise(ndvi_mean = mean(value, na.rm=TRUE),
+            ndvi_sd = sd(value, na.rm=TRUE),
+            ndvi_se = plotrix::std.error(value, na.rm=TRUE),
+            n = length(value)) %>% 
+  ungroup() %>% 
+  mutate(date = ISOweek2date(paste(datew, "1", sep="-"))) 
+
+control_np <- ndvi_avg %>%
+  filter(str_detect(NOMBRE, "AL_CON_NP")) %>%
+  group_by(date) %>%
+  summarise(
+    CONTROL = mean(ndvi_mean, na.rm = TRUE),
+    CONTROL_sd = sd(ndvi_mean, na.rm = TRUE),
+    CONTROL_se = plotrix::std.error(ndvi_mean, na.rm = TRUE),
+    n = length(ndvi_mean)
+  ) %>%
+  ungroup()
+control_p <- ndvi_avg %>%
+  filter(str_detect(NOMBRE, "AL_CON_P")) %>%
+  group_by(date) %>%
+  summarise(
+    CONTROL = mean(ndvi_mean, na.rm = TRUE),
+    CONTROL_sd = sd(ndvi_mean, na.rm = TRUE),
+    CONTROL_se = plotrix::std.error(ndvi_mean, na.rm = TRUE),
+    n = length(ndvi_mean)
+  ) %>%
+  ungroup()
+control_all <- ndvi_avg %>%
+  filter(str_detect(NOMBRE, "AL_CON_")) %>%
+  group_by(date) %>%
+  summarise(
+    CONTROL = mean(ndvi_mean, na.rm = TRUE),
+    CONTROL_sd = sd(ndvi_mean, na.rm = TRUE),
+    CONTROL_se = plotrix::std.error(ndvi_mean, na.rm = TRUE),
+    n = length(ndvi_mean)
+  ) %>%
+  ungroup()
+
+
+qndvi <- ndvi_avg %>% 
+  filter(!(str_detect(NOMBRE, "AL_CON"))) %>%
+  dplyr::select(NOMBRE, ndvi_mean, date) %>%
+  pivot_wider(values_from = ndvi_mean, names_from = NOMBRE)
+qndvi <- inner_join(
+  qndvi, 
+  control_all %>% 
+    dplyr::select(date, CONTROL)
+  ) %>% 
+  mutate_at(vars(starts_with("AL_")), function(i) i / .$CONTROL)
+
+qndvi_long <- qndvi %>%
+  pivot_longer(-date, names_to = "NOMBRE", values_to = "Qndvi") %>%
+  filter(NOMBRE != "CONTROL") %>%
+  mutate(treatment = case_when(
+      str_detect(NOMBRE, "AL_PR") ~ "Grazing+Spring",
+      str_detect(NOMBRE, "AL_P_") ~ "Grazing+Autumn",
+      str_detect(NOMBRE, "AL_NP_") ~ "NoGrazing+Autumn")) %>% 
+  filter(Qndvi < 2)
+
+qndvi_long %>% 
+  ggplot(aes(x = date, y = Qndvi, group = NOMBRE, colour = treatment)) +
+  geom_line() +
+  facet_wrap(~NOMBRE, scales = "free_y") +
+  geom_hline(yintercept = 1) +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        legend.position = "bottom")
+
+qndvi_avg <- qndvi_long %>% 
+  group_by(date, treatment) %>% 
+  summarise(mean = mean(Qndvi, na.rm=TRUE), 
+            sd = sd(Qndvi, na.rm=TRUE), 
+            se = plotrix::std.error(Qndvi, na.rm=TRUE))
+
+
+
+colores <- c("#488f31", "#f18255")
+
+qndvi_treat <- qndvi_avg %>% 
+  filter(treatment != "Grazing+Spring") %>% 
+  mutate(treat = case_when(
+    treatment == "Grazing+Autumn" ~ "HP",
+    treatment == "NoGrazing+Autumn" ~ "QP"
+  ))
+
+qndvi_treat %>% 
+  ggplot(aes(x=date, y=mean, colour=treat, fill=treat)) + 
+  geom_ribbon(aes(ymin = mean - se, ymax=mean+se), alpha = .3) +
+  geom_line(aes(y=mean)) +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank()) + 
+  geom_hline(yintercept = 1) +
+  scale_colour_manual(values=colores) + 
+  scale_fill_manual(values=colores) 
+
+## General data
+autumn_fire <- lubridate::ymd("2018-12-18")
+grazing_start <- lubridate::ymd("2019-10-01")
+
+## PASTOREO 
+pastoreo <- readxl::read_excel(here::here("data/tablas_horas_pastoreo.xlsx")) %>% 
+  janitor::clean_names() 
+
+library(lubridate)
+pastoreo <- pastoreo %>% 
+  mutate(date = make_date(year, month, '01')) %>% 
+    mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(date)) %/% months(1)))) %>% 
+  mutate(meses = case_when(
+    year == 2018 ~ -1, 
+    TRUE ~ meses
+  )) 
+```
+
+```{r}
+climate <- read_delim("/Users/ajpelu/Nextcloud/alcontar/aux_Alcontar/climate_data/Tijola.csv", delim=";") %>% 
+  mutate(date = as.Date(FECHA, format="%d/%m/%y"))
+
+min(qndvi_treat$date)
+max(qndvi_treat$date)
+climate_df <- climate %>% 
+  filter(date > min(qndvi_treat$date) -1) %>% 
+  filter(date < max(qndvi_treat$date) + 1)
+
+```
+
+```{r}
+prec_anual <- 
+  climate %>% 
+  mutate(y = lubridate::year(date)) %>% 
+  group_by(y) %>% 
+  summarise(prec_anual = sum(Al12Precip, na.rm = TRUE))
+
+media_periodo <- mean(prec_anual$prec_anual)
+
+```
+
+
+```{r}
+plotQNDVI_pastoreo <- ggplot(qndvi_treat, aes(x=date, y=mean)) + 
+  geom_ribbon(aes(ymin = mean - se, ymax=mean+se,
+                  colour=treat, fill=treat), alpha = .3) +
+  geom_line(aes(y=mean, colour=treat, fill=treat)) +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        legend.position = "bottom") + 
+  geom_hline(yintercept = 1) + 
+  xlab("Fecha") + 
+  scale_colour_manual(values=colores) + 
+  scale_fill_manual(values=colores) + 
+  geom_bar(data = pastoreo, stat="identity", fill="black",
+              aes(x= date,  
+               y = sum_avg_hour/40)) + 
+  scale_y_continuous("QNDVI", sec.axis = sec_axis(~.*40, 
+                                                  breaks = seq(0, 20, by = 5),
+                                                  name = "Pastoreo \n (horas mensuales)")) +
+  geom_vline(xintercept = autumn_fire, color="#800909") +
+  geom_vline(xintercept = grazing_start,linetype="dotted") 
+
+p2017 <- prec_anual %>% filter(y == 2017) %>% pull()
+p2018 <- prec_anual %>% filter(y == 2018) %>% pull()
+p2019 <- prec_anual %>% filter(y == 2019) %>% pull()
+p2020 <- prec_anual %>% filter(y == 2020) %>% pull()
+p2021 <- prec_anual %>% filter(y == 2021) %>% pull()
+
+
+plot_prec  <- 
+  ggplot(climate_df, aes(x=date, y=Al12Precip)) + 
+  geom_bar(stat="identity", colour= "darkblue", fill="darkblue") + 
+  scale_y_continuous(limits = c(0, 50)) + 
+  scale_x_date(position = "bottom", breaks = "month", labels = scales::label_date(format = "%m")) + 
+  theme_bw() + ylab("Prec. (mm)") +
+  geom_vline(xintercept = autumn_fire, color="#800909") + 
+  geom_vline(xintercept = grazing_start,linetype="dotted") +
+  theme(
+    panel.grid.major.y  =  element_blank(), 
+    panel.grid.minor.y  =  element_blank(), 
+    panel.grid.minor.x  =  element_blank(), 
+    axis.ticks = element_blank()
+    # axis.text.x = element_blank()
+  ) + xlab("") +
+  annotate("text", x = as.Date("2017-06-01"), y = 45, label = p2017, 
+           color = ifelse(p2017 < media_periodo, "red", "blue")) +
+    annotate("text", x = as.Date("2018-06-01"), y = 45, label = p2018, 
+           color = ifelse(p2018 < media_periodo, "red", "blue")) +
+  annotate("text", x = as.Date("2019-06-01"), y = 45, label = p2019, 
+           color = ifelse(p2019 < media_periodo, "red", "blue")) +
+  annotate("text", x = as.Date("2020-06-01"), y = 45, label = p2020, 
+           color = ifelse(p2020 < media_periodo, "red", "blue")) +
+  annotate("text", x = as.Date("2021-06-01"), y = 45, label = p2021, 
+           color = ifelse(p2021 < media_periodo, "red", "blue")) +
+  geom_vline(xintercept = as.Date(c("2018-01-01",
+                                    "2019-01-01",
+                                    "2020-01-01",
+                                    "2021-01-01")), color="darkgray") 
+   
+```
+  
+
+```{r, fig.width=10, fig.height=5, dev=c('png', 'jpeg', 'tiff')}
+plot_prec/plotQNDVI_pastoreo + plot_layout(heights = c(.8, 2)) +
+      theme(plot.margin = margin(t=-10,r=0,b=0,l=0, "pt"))
+```
+
+
+
+
+
+
+
+
+
