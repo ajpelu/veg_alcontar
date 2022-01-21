@@ -40,6 +40,9 @@ library(performance)
 library(patchwork)
 library(gtsummary)
 library(plotrix)
+library(emmeans)
+library(itsadug)
+library(xlsx)
 ```
 
 ```{r preparaDatos}
@@ -235,15 +238,6 @@ gamR2 <- function(gam) {
   return(a)
 }
 
-
-library(emmeans)
-tabla_postHoc <- function(modelo){
-  posthoc <- emmeans(modelo, ~ meses * treat * rango)
-  contrast(posthoc, "consec", simple = "each", combine = TRUE,
-           adjust = "tukey") %>% 
-  kbl(digits = 4) %>% 
-    kable_paper("hover", full_width = F)
-}
 ```
 
 
@@ -380,6 +374,23 @@ param.shan <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Shannon")
 anova.shan <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Shannon")
 ```
 
+### Post-hoc 
+```{r}
+library(itsadug)
+mod_full <- bam(fni, data = veg)
+mod_rangos <- bam(shan ~ s(meses, by = treat, k = 5, bs = "cs") + s(meses, by = rango, 
+    k = 5, bs = "cs") + rango, data = veg)
+
+ph_full_shan <- wald_gam(mod_full) %>% 
+  mutate(p.value1 = round(p.value, 4),
+         variable = "Shannon")
+
+ph_rangos_shan <- wald_gam(mod_rangos) %>% 
+  mutate(p.value1 = round(p.value, 4),
+         variable = "Shannon")                  
+```
+
+### Plot
 ```{r}
 dfp.shan <- get_gam_predictions(m$gam, series = meses)
 ```
@@ -498,6 +509,24 @@ param.rectot <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Cobertur
 anova.rectot <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Cobertura total")
 ```
 
+### Post-hoc 
+```{r}
+library(itsadug)
+mod_full <- bam(fni, data = veg)
+mod_rangos <- bam(cob ~ s(meses, by = treat, k = 5, bs = "cs") + s(meses, by = rango, 
+    k = 5, bs = "cs") + rango, data = veg)
+
+ph_full_cob <- wald_gam(mod_full) %>% 
+  mutate(p.value1 = round(p.value, 4),
+         variable = "Cobertura total")
+
+ph_rangos_cob <- wald_gam(mod_rangos) %>% 
+  mutate(p.value1 = round(p.value, 4),
+         variable = "Cobertura total")                  
+```
+
+### Plot
+
 ```{r}
 dfp.rectot <- get_gam_predictions(m$gam, series = meses)
 ```
@@ -615,6 +644,24 @@ param.fitovol <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Fitovol
 
 anova.fitovol <- anova(m$gam)$pTerms.table %>% as.data.frame() %>% mutate(var = "Fitovolumen")
 ```
+
+### Post-hoc 
+```{r}
+library(itsadug)
+mod_full <- bam(fni, data = veg)
+mod_rangos <- bam(fitovol ~ s(meses, by = treat, k = 5, bs = "cs") + s(meses, by = rango, 
+    k = 5, bs = "cs") + rango, data = veg)
+
+ph_full_fitovol <- wald_gam(mod_full) %>% 
+  mutate(p.value1 = round(p.value, 4),
+         variable = "Fitovolumen")
+
+ph_rangos_fitovol <- wald_gam(mod_rangos) %>% 
+  mutate(p.value1 = round(p.value, 4),
+         variable = "Fitovolumen")                  
+```
+
+### Plot
 
 ```{r}
 dfp.fitovol <- get_gam_predictions(m$gam, series = meses)
@@ -742,5 +789,23 @@ model_summary %>%
       digits = c(0,3,2,0)) %>% 
   kable_paper(full_width = F) 
 
+```
+
+- Post-hoc 
+
+```{r}
+ph_full <- bind_rows(ph_full_shan, 
+                     ph_full_cob, 
+                     ph_full_fitovol)
+
+ph_rangos <- bind_rows(ph_rangos_shan, 
+                     ph_rangos_cob, 
+                     ph_rangos_fitovol)
+
+write.xlsx(ph_full, here::here("output/congreso_forestal/tabla_post_hoc.xls"), 
+           sheetName="postHoc_full", col.names=TRUE, row.names=TRUE, append=FALSE)
+
+write.xlsx(ph_rangos, here::here("output/congreso_forestal/tabla_post_hoc.xls"), 
+           sheetName="postHoc_rangos", col.names=TRUE, row.names=TRUE, append=TRUE)
 ```
 
