@@ -8,7 +8,8 @@ editor_options:
 ---
 
 ```{r global-options, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
 ```
 
 # Introduction
@@ -25,6 +26,8 @@ library(tidymv)
 library(broom)
 library(performance)
 library(patchwork)
+library(gtsummary)
+library(plotrix)
 ```
 
 - Read data 
@@ -60,6 +63,10 @@ veg <- veg_raw %>%
 # Subset of data (pre/post) 
 ad <- veg %>% filter(meses %in% c(-1, 22)) %>% 
   mutate(shannon = abs(shan))
+
+
+pastoreo <- readxl::read_excel(here::here("data/tablas_horas_pastoreo.xlsx")) %>% 
+  janitor::clean_names() 
 ```
 
 
@@ -188,7 +195,7 @@ gamR2 <- function(gam) {
 
 library(emmeans)
 tabla_postHoc <- function(modelo){
-  posthoc <- emmeans(modelo, ~ meses * treat)
+  posthoc <- emmeans(modelo, ~ meses * treat * rango)
   contrast(posthoc, "consec", simple = "each", combine = TRUE,
            adjust = "tukey") %>% 
   kbl(digits = 4) %>% 
@@ -257,8 +264,6 @@ inset.riq <- ggpubr::ggboxplot(ad, x="meses", y="riq", fill = "treat", palette =
         plot.background = element_rect(fill = "transparent",colour = NA),
         text = element_text(size = 10))
 
-plot.riq + inset_element(inset.riq,
-                         0.6, 0.6, .95,.95)
 ```
 
 ```{r plot_riqueza, dev = c('png','jpeg','tiff')}
@@ -280,6 +285,13 @@ ggstatsplot::grouped_ggwithinstats(
 
 ```{r}
 maov <- aov(riq~meses*treat, data = ad)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
 ```
 
 ```{r}
@@ -356,7 +368,7 @@ plot.shannon <- plot_smooths(
   geom_point(data = veg, 
              aes(x=meses, y=shannon, colour=treat), 
              alpha=.6, size=.8,
-             position = position_jitter())
+             position = position_jitter(width = .4)) 
 
 inset.sha <- ggpubr::ggboxplot(ad, x="meses", y="shannon", fill = "treat", palette = colores, ylab="") + 
   theme(legend.position = "none", 
@@ -385,6 +397,14 @@ ggstatsplot::grouped_ggwithinstats(
 ```{r}
 maov <- aov(shannon~meses*treat, data = ad)
 ```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
 
 ```{r}
 tabla_postHoc(maov)
@@ -444,7 +464,7 @@ plot.rec_total <- plot_smooths(
 ) +
   scale_colour_manual(values = colores) +
   scale_fill_manual(values = colores) +
-  ylab("Cobertura total (%)") + 
+  ylab("Recubrimiento total (%)") + 
   xlab("Tiempo (meses tras la quema)") + 
   theme_bw() + 
   theme(legend.position = "top",
@@ -457,7 +477,7 @@ plot.rec_total <- plot_smooths(
   geom_point(data = veg, 
              aes(x=meses, y=rec_tot, colour=treat), 
              alpha=.6, size=.8,
-             position = position_jitter())
+             position = position_jitter(width = .4)) 
 
 inset.rec_tot <- ggpubr::ggboxplot(ad, x="meses", y="rec_tot", fill = "treat", palette = colores, ylab="") + 
   theme(legend.position = "none", 
@@ -489,12 +509,20 @@ maov <- aov(rec_tot~meses*treat, data = ad)
 ```
 
 ```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+
+```{r}
 tabla_postHoc(maov)
 ```
 
 # Vegetation Cover 
 ## Model
-```{r echo=TRUE}
+```{r, echo=TRUE}
 f <- as.formula(rec_veg ~ s(meses, by = treat, k=5, bs="cs") + treat)
 
 m <- gamm(f, 
@@ -558,7 +586,7 @@ plot.rec_veg <- plot_smooths(
   geom_point(data = veg, 
              aes(x=meses, y=rec_veg, colour=treat), 
              alpha=.6, size=.8,
-             position = position_jitter())
+             position = position_jitter(width = .4)) 
 
 inset.rec_veg <- ggpubr::ggboxplot(ad, x="meses", y="rec_veg", fill = "treat", palette = colores, ylab="") + 
   theme(legend.position = "none", 
@@ -590,12 +618,20 @@ maov <- aov(rec_veg~meses*treat, data = ad)
 ```
 
 ```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+
+```{r}
 tabla_postHoc(maov)
 ```
 
 # Phytovol 
 ## Model
-```{r echo=TRUE}
+```{r, echo=TRUE}
 veg$fitovolT <- sqrt(veg$fitovol)
 f <- as.formula(fitovolT ~ s(meses, by = treat, k=5, bs="cs") + treat)
 m <- gamm(f,
@@ -662,7 +698,7 @@ plot.fitovolsqrt <- plot_smooths(
   geom_point(data = veg, 
              aes(x=meses, y=fitovolT, colour=treat), 
              alpha=.6, size=.8,
-             position = position_jitter())
+             position = position_jitter(width = .4)) 
 
 plot.fitovolsqrt
 ```
@@ -670,7 +706,7 @@ plot.fitovolsqrt
 
 # Phytovol (I) 
 ## Model
-```{r echo=TRUE}
+```{r, echo=TRUE}
 
 f <- as.formula(fitovol ~ s(meses, by = treat, k=5, bs="cs") + treat)
 m <- gamm(f,
@@ -725,7 +761,7 @@ plot.fitovol <- plot_smooths(
   scale_colour_manual(values = colores) +
   scale_fill_manual(values = colores) +
   ylab(expression(Fitovolumen~(m^3~ha^{-1}))) + 
-  xlab("Time (months)") + 
+  xlab("Tiempo (meses tras la quema)") +  
   theme_bw() + 
   theme(legend.position = "top",
         panel.grid = element_blank()) +
@@ -737,7 +773,7 @@ plot.fitovol <- plot_smooths(
   geom_point(data = veg, 
              aes(x=meses, y=fitovol, colour=treat), 
              alpha=.6, size=.8,
-             position = position_jitter())
+             position = position_jitter(width = .4)) 
 
 inset.fitovol <- ggpubr::ggboxplot(ad, x="meses", y="fitovol", fill = "treat", palette = colores, ylab="") + 
   theme(legend.position = "none", 
@@ -769,6 +805,14 @@ maov <- aov(fitovol~meses*treat, data = ad)
 ```
 
 ```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) %>% 
+  kbl(digits = c(0, 0, 2,2,2,4)) %>% 
+  kable_styling()
+```
+
+
+```{r}
 tabla_postHoc(maov)
 ```
 
@@ -781,7 +825,7 @@ veg %>% filter(consumo > 8)
 ```
 
 
-```{r echo=TRUE}
+```{r, echo=TRUE}
 f <- as.formula(consumo ~ s(meses, by = treat, k=5, bs="cs") + treat)
 
 veg.out <- veg %>% filter(consumo < 8)
@@ -809,15 +853,16 @@ appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
 
 ### Coefficients
 
-```{r}
-gamtab2(m$gam) %>% 
-  kbl(col.names = NULL) %>% 
-  kable_paper(full_width = F) %>%
-  row_spec(c(1,4), bold = T)
+```{r, eval=FALSE}
+# gamtab2(m$gam) %>% 
+#   kbl(col.names = NULL) %>% 
+#   kable_paper(full_width = F) %>%
+#   row_spec(c(1,4), bold = T)
 
 # Get parameters 
-smooth.consumo <- broom::tidy(m$gam) %>% mutate(var = "Tasa Consumo")
-param.consumo <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = "Tasa Consumo")
+# smooth.consumo <- broom::tidy(m$gam) 
+# %>% mutate(var = 'Tasa Consumo')
+# param.consumo <- broom::tidy(m$gam, parametric = TRUE) %>% mutate(var = 'Tasa Consumo')
 ```
 
 ### Visualizing effects
@@ -838,7 +883,7 @@ plot.consumo <- plot_smooths(
   ylab("Tasa de Consumo") + 
   xlab("Tiempo (meses tras la quema)") +  
   theme_bw() + 
-  theme(legend.position = "top",
+  theme(legend.position = "bottom",
         panel.grid = element_blank()) +
   geom_vline(xintercept = 0.5, color="#800909") + 
   geom_vline(xintercept = 
@@ -856,34 +901,53 @@ inset.consumo <- ggpubr::ggboxplot(ad.out, x="meses", y="consumo", fill = "treat
         panel.background = element_rect(fill = "transparent",colour = NA),
         plot.background = element_rect(fill = "transparent",colour = NA),
         text = element_text(size = 10))
-
 ```
 
 ```{r plot_consumo, dev = c('png','jpeg','tiff')}
-plot.consumo + inset_element(inset.consumo,
-                         0.5, 0.45, .95,.95)
+# plot.consumo + inset_element(inset.consumo, 0.5, 0.45, .95,.95)
+plot.consumo
 ```
 
-### Pre-post (autumn)
-```{r}
-ggstatsplot::grouped_ggwithinstats(
-  ad, 
-  x=meses,
-  y=consumo, 
-  grouping.var = treat,
-  pairwise.display = "significant",
-  point.path = FALSE,
-  type = "parametric"
-)
-```
+
+### Grafico combinado consumo
 
 ```{r}
-maov <- aov(consumo~meses*treat, data = ad)
+library(lubridate)
+pastoreo <- pastoreo %>% 
+  mutate(fecha = make_date(year, month, '01')) %>% 
+    mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(meses = case_when(
+    year == 2018 ~ -1, 
+    TRUE ~ meses
+  ))
+
+
+```
+ 
+```{r}
+plot_pastoreo <- 
+  ggplot(pastoreo, aes(x=meses, y=sum_avg_hour)) + 
+  geom_bar(stat="identity", fill="darkgreen") + 
+  scale_y_continuous(limits = c(-1, 30)) + 
+  theme_bw() + ylab("Pastoreo \n (horas mensuales)") +
+  theme(
+    panel.grid = element_blank(), 
+    axis.ticks = element_blank(), 
+    axis.text.x = element_blank()
+  ) + 
+  scale_x_continuous(position = "top") + 
+  xlab("") +
+  geom_vline(xintercept = 
+                  (lubridate::interval(autumn_fire,grazing_start) %/% months(1)) - 0.4,
+             linetype="dotted"
+             ) +
+  geom_vline(xintercept = 0.4, color="#800909") 
 ```
 
-```{r}
-tabla_postHoc(maov)
+```{r, plot_consumo_combinado, dev=c('png', 'jpeg', 'tiff')}
+plot_pastoreo/plot.consumo + plot_layout(heights = c(.8, 2)) 
 ```
+
 
 # General overview 
 
@@ -894,8 +958,8 @@ p.terms <-
             param.rec_tot,
             param.rec_veg,
             param.fitovol, 
-            param.fitovol1,
-            param.consumo) %>% 
+            param.fitovol1)
+            # param.consumo) %>% 
   relocate(var) %>%
   mutate(
     term = case_when(
@@ -930,8 +994,8 @@ s.terms <-
             smooth.rec_tot,
             smooth.rec_veg,
             smooth.fitovol, 
-            smooth.fitovol1,
-            smooth.consumo) %>% 
+            smooth.fitovol1
+            # smooth.consumo) %>% 
   relocate(var) 
 ```
 
@@ -955,7 +1019,7 @@ s.terms %>%
 library(patchwork)
 ```
 
-```{r, fig.height=10}
+```{r, eval = FALSE, fig.height=10}
 plot.riq + plot.shannon + plot.rec_total + plot.rec_veg + plot.fitovolsqrt + plot.consumo + plot_layout(guides = "collect", nrow = 3) & theme(legend.position = "bottom")
 ```
 
@@ -964,8 +1028,6 @@ plot.riq + plot.shannon + plot.rec_total + plot.rec_veg + plot.fitovolsqrt + plo
 ## Summary table 
 
 ```{r}
-library(gtsummary)
-library(plotrix)
 
 ad %>% 
   dplyr::select(rec_tot, rec_veg, riq, shan, fitovol, consumo, treat, meses) %>% 
@@ -985,6 +1047,24 @@ ad %>%
 ```
 
 
+```{r}
+veg %>% 
+  dplyr::select(rec_tot, rec_veg, riq, shan, fitovol, consumo, treat, meses, fecha) %>% 
+ tbl_strata(
+    strata = treat, 
+    .tbl_fun = 
+      ~.x %>% 
+      tbl_summary(
+        by = fecha,
+        missing = "no",
+        # type = c(p) ~ "continuous",
+       # label = list(ab ~ "Juvenile abundance"),
+        statistic = all_continuous() ~ "{mean} ± {std.error}",
+        digits = everything() ~ 2
+      )) 
+```
+
+
 # Some resources 
 
 - [Plots for Generalized Additive Models](https://doi.org/10.1080/03610926.2011.628772)
@@ -995,7 +1075,7 @@ ad %>%
 - [GAMs](https://m-clark.github.io/generalized-additive-models) 
 
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=FALSE, echo=}
 df.predict <- get_gam_predictions(m$gam, 
                                   series = meses)
 

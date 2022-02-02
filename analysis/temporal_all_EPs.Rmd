@@ -1,0 +1,282 @@
+---
+title: "temporal_all_EPs"
+author: "ajpelu"
+date: "2021-12-01"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Plots O2P meeting final 
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(Metrics)
+library(ggpmisc)
+```
+
+```{r}
+cob_q <- readxl::read_excel(here::here("data/Datos_para correlaciones_Antonio.xlsx"), sheet = "Cobertura_quadrats") %>% 
+  janitor::clean_names() %>% 
+  dplyr::select(rec_total_q = cob_total, 
+                quadrat, zona, parcela) %>% 
+  mutate(
+      zona =
+      case_when(
+        str_detect(zona, "Quemado con pastoreo") ~ "QOt_P",
+        str_detect(zona, "Quemado primavera") ~ "QPr_P",
+        TRUE ~ "QOt_NP"
+      ))
+
+cob_pq <- readxl::read_excel(here::here("data/Datos_para correlaciones_Antonio.xlsx"), sheet = "Cobertura_point_quadrat") %>% 
+  janitor::clean_names() %>% 
+  dplyr::select(rec_total_pq = rec_total, 
+                transecto, zona, parcela) %>% 
+  mutate(
+      zona =
+      case_when(
+        str_detect(zona, "Quemado con pastoreo") ~ "QOt_P",
+        str_detect(zona, "Quemado primavera") ~ "QPr_P",
+        TRUE ~ "QOt_NP"
+      ))
+
+
+cob_li <- readxl::read_excel(here::here("data/Datos_para correlaciones_Antonio.xlsx"), sheet = "Cobertura_line_int") %>% 
+  janitor::clean_names() %>% 
+  dplyr::select(rec_total_li = rec_total, 
+                transecto, zona, parcela) %>% 
+    mutate(
+      zona =
+      case_when(
+        str_detect(zona, "Quemado con pastoreo") ~ "QOt_P",
+        str_detect(zona, "Quemado primavera") ~ "QPr_P",
+        TRUE ~ "QOt_NP"
+      ))
+
+
+fi_li <- readxl::read_excel(here::here("data/Datos_para correlaciones_Antonio.xlsx"), sheet = "Fitovol_line_int") %>% 
+  janitor::clean_names() %>% 
+  dplyr::select(fitovol_li = fitovol, 
+                transecto, zona, parcela) %>% 
+    mutate(
+      zona =
+      case_when(
+        str_detect(zona, "Quemado con pastoreo") ~ "QOt_P",
+        str_detect(zona, "Quemado primavera") ~ "QPr_P",
+        TRUE ~ "QOt_NP"
+      ))
+
+fi_q <- readxl::read_excel(here::here("data/Datos_para correlaciones_Antonio.xlsx"), sheet = "Fitovol_quadrats") %>% 
+  janitor::clean_names() %>% 
+  dplyr::select(fitovol_q = fitovol, 
+                quadrat, zona, parcela) %>% 
+  mutate(
+      zona =
+      case_when(
+        str_detect(zona, "Quemado con pastoreo") ~ "QOt_P",
+        str_detect(zona, "Quemado primavera") ~ "QPr_P",
+        TRUE ~ "QOt_NP"
+      ))
+
+
+
+
+
+
+cobs <- cob_pq %>% inner_join(cob_li) 
+
+
+cob_all <- cob_q %>% left_join(cobs)
+fi_all <- fi_q %>% left_join(fi_li)
+
+```
+
+
+```{r}
+library(ggpubr)
+
+df.rmse <- cobs %>% summarise(rmse = round(Metrics::rmse(rec_total_li,rec_total_pq),2))
+
+formula_lm <- y~x
+cobs %>% ggplot(aes(x=rec_total_li, y=rec_total_pq)) +
+  geom_point(aes(colour=zona), size=2) + 
+  geom_smooth(method="lm", se=FALSE, colour="gray") + 
+  geom_abline(slope=1) +
+   xlim(0,75) + ylim(0,75) + 
+  xlab("Line-Intercept") + 
+  ylab("Point Quadrats") +
+  ggtitle("Total cover (%)") + 
+  theme_bw() +
+    stat_poly_eq(formula = formula_lm, 
+               label.x = "left",
+                label.y = "top", parse = TRUE) +
+  geom_text(data = df.rmse, 
+            aes(x =5, y= 60, label = paste0("RMSE = \n ", rmse)))
+
+```
+
+# Quadrats vs Point-Quadrats
+
+```{r}
+df.rmse_q_pq <- cob_all %>% summarise(rmse = round(Metrics::rmse(rec_total_q,rec_total_pq),2))
+
+formula_lm <- y~x
+cob_all %>% ggplot(aes(x=rec_total_pq, y=rec_total_q)) +
+  geom_point(aes(colour=zona), size=2) + 
+  geom_smooth(method="lm", se=FALSE, colour="gray") + 
+  geom_abline(slope=1) +
+   xlim(0,75) + ylim(10,85) + 
+  xlab("Point Quadrats") + 
+  ylab("Quadrats") +
+  ggtitle("Total cover (%)") + 
+  theme_bw() +
+    stat_poly_eq(formula = formula_lm, 
+               label.x = "left",
+                label.y = "top", parse = TRUE) +
+  geom_text(data = df.rmse_q_pq, 
+            aes(x =5, y= 60, label = paste0("RMSE = \n ", rmse)))
+
+
+
+```
+
+# Cob Quadrats vs Line-Intercept
+
+```{r}
+df.rmse_q_li <- cob_all %>% summarise(rmse = round(Metrics::rmse(rec_total_q,rec_total_li),2))
+
+formula_lm <- y~x
+cob_all %>% ggplot(aes(x=rec_total_li, y=rec_total_q)) +
+  geom_point(aes(colour=zona), size=2) + 
+  geom_smooth(method="lm", se=FALSE, colour="gray") + 
+  geom_abline(slope=1) +
+   xlim(0,85) + ylim(0,85) + 
+  xlab("Line Intercept") + 
+  ylab("Quadrats") +
+  ggtitle("Total cover (%)") + 
+  theme_bw() +
+    stat_poly_eq(formula = formula_lm, 
+               label.x = "left",
+                label.y = "top", parse = TRUE) +
+  geom_text(data = df.rmse_q_li, 
+            aes(x =5, y= 60, label = paste0("RMSE = \n ", rmse)))
+
+```
+
+## Fitovol 
+```{r}
+df.rmse_q_li_fi <- fi_all %>% summarise(rmse = round(Metrics::rmse(fitovol_q,fitovol_li),2))
+
+formula_lm <- y~x
+fi_all %>% ggplot(aes(x=fitovol_li, y=fitovol_q)) +
+  geom_point(aes(colour=zona), size=2) + 
+  geom_smooth(method="lm", se=FALSE, colour="gray") + 
+  geom_abline(slope=1) +
+   xlim(0,2000) + ylim(0,3500) + 
+  xlab("Line Intercept") + 
+  ylab("Quadrats") +
+  ggtitle("Phytovolumen") + 
+  theme_bw() +
+    stat_poly_eq(formula = formula_lm, 
+               label.x = "left",
+                label.y = "top", parse = TRUE) +
+  geom_text(data = df.rmse_q_li_fi, 
+            aes(x =505, y= 3200, label = paste0("RMSE = \n ", rmse)))
+```
+
+
+
+## Plots of all sites for final O2P meeting 
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+```{r}
+df <- readxl::read_excel(here::here("data/Resultados_todos los partners.xlsx"), sheet = 1) %>% 
+  janitor::clean_names() 
+
+df <- df %>% mutate(
+  eps = ifelse(ep == "Navarra", 
+               paste(ep,parcela, sep="_"), 
+               ep)
+)
+```
+
+# Cobertura
+```{r}
+# No data for Aquitania 
+colores <- c("black","#488f31", "#f18255")
+puntitos <- c(15, 16, 17, 25, 9)
+
+
+df %>% 
+  filter(eps!="Aquitania") %>% 
+  ggplot(aes(x=meses, y=cobertura_tot_media,
+             shape=eps, group=interaction(tratamiento,eps), colour=tratamiento)) +
+  geom_errorbar(
+    aes(ymin=cobertura_tot_media - cobertura_tot_es,
+        ymax=cobertura_tot_media + cobertura_tot_es)) +
+  geom_point(size=2) +
+  geom_path() +
+  facet_grid(~ganado) + 
+    xlab("Months after fire") +
+  ylab("Total coverage (%)") +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) + 
+  scale_colour_manual(values = colores) + 
+  scale_shape_manual(values=puntitos)
+
+# Propuesta: separar Equino entre sitios
+```
+
+# fitovolumen
+```{r}
+
+
+df %>% 
+  filter(!is.na(fitovol_media)) %>% 
+  ggplot(aes(x=meses, y=fitovol_media,
+             shape=eps, group=interaction(tratamiento,eps), colour=tratamiento)) +
+  geom_errorbar(
+    aes(ymin=fitovol_media - fitovol_es,
+        ymax=fitovol_media + fitovol_es)) +
+  geom_point(size=2) +
+  geom_path() +
+  facet_grid(~ganado) + 
+    xlab("Months after fire") +
+  ylab("Phytovol (m3)") +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) + 
+  scale_colour_manual(values = colores) + 
+  scale_shape_manual(values=puntitos)
+
+```
+
+```{r}
+df %>% 
+  filter(!is.na(fitovol_media)) %>% 
+  filter(ganado == "Equino") %>% 
+  filter(eps != "Navarra_25") %>% 
+  ggplot(aes(x=meses, y=fitovol_media,
+             shape=eps, group=interaction(tratamiento,eps), colour=tratamiento)) +
+  geom_errorbar(
+    aes(ymin=fitovol_media - fitovol_es,
+        ymax=fitovol_media + fitovol_es)) +
+  geom_point(size=2) +
+  geom_path() +
+  facet_grid(~ep, scales = "free_y") + 
+    xlab("Months after fire") +
+  ylab("Phytovol (m3)") +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) + 
+  scale_colour_manual(values = colores) + 
+  scale_shape_manual(values=puntitos) + 
+  geom_hline(yintercept = 2500)
+
+```
+
