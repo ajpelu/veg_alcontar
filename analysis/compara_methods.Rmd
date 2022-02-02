@@ -1,0 +1,193 @@
+---
+title: "compara_methods"
+author: "ajpelu"
+date: "2022-02-02"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(ggdark)
+library(ggforce)
+library(colorspace)
+```
+
+Comparison of estimation methods for coverage and phytovolume 
+  
+
+```{r read-data, echo=TRUE}
+fit_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "fitovolumen_transectos") %>% janitor::clean_names() 
+
+fit_q <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "fitovolumen_quadrat") %>% janitor::clean_names() 
+
+cob_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "cobertura_transectos") %>% janitor::clean_names() 
+
+cob_q <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "cobertura_quadrat") %>% janitor::clean_names() 
+```
+
+- Prepara data 
+```{r}
+cob_qlonger <- cob_q %>% dplyr::select(zona, parcela, plot, dronQ = dron) %>% 
+  pivot_longer(cols = c("dronQ", "plot"))
+
+cob_tlonger <- cob_t %>% 
+  dplyr::select(-transecto) %>% 
+  rename(dronT = dron) %>% 
+  pivot_longer(cols = c("dronT", "line_intercept","point_quadrat"))
+
+cob <- bind_rows(cob_qlonger, cob_tlonger) %>% 
+  mutate(metodo = fct_relevel(name, c("plot","dronQ","line_intercept","point_quadrat", "dronT"))) %>% 
+  mutate(variable = "Cobertura")
+
+fit_qlonger <- fit_q %>% dplyr::select(zona, parcela, plot, dronQ = dron) %>% 
+  pivot_longer(cols = c("dronQ", "plot"))
+
+fit_tlonger <- fit_t %>% 
+  dplyr::select(-transecto, -fecha_muestreos) %>% 
+  rename(line_intercept = line_interc) %>% 
+  rename(dronT = dron) %>% 
+  pivot_longer(cols = c("dronT", "line_intercept"))
+
+fit <- bind_rows(fit_qlonger, fit_tlonger) %>% 
+  mutate(metodo = fct_relevel(name, c("plot","dronQ","line_intercept", "dronT"))) %>% 
+  mutate(variable = "Fitovolumen")
+
+d <- bind_rows(cob, fit)
+
+```
+
+
+## Plot Cobertura
+```{r}
+theme_set(theme_bw())
+
+g <- ggplot(cob, aes(x = metodo, y = value, color = metodo, fill = metodo)) +
+  labs(x="Método") +
+  scale_color_brewer(palette = "Dark2", guide = "none") +
+  scale_fill_brewer(palette = "Dark2", guide = "none") + 
+   
+  theme(
+    strip.background = element_rect(fill="white")
+  ) + 
+  ggdist::stat_gradientinterval(
+    width = .3, inherit.aes = TRUE,
+        point_size=2
+  ) 
+   
+plot_cob <- g + ylab("Cobertura (%)")
+
+ggsave(plot_cob, 
+       filename = here::here("output/informes/compara_cobertura.jpg"), 
+       height = 8, width = 12, units = "cm", dpi = "print")
+
+```
+
+```{r}
+plot_cob
+```
+
+
+##  Plot Fitovolumen
+```{r}
+theme_set(theme_bw())
+
+g <- ggplot(fit, aes(x = metodo, y = value, color = metodo, fill = metodo)) +
+  labs(x="Método") +
+  scale_color_brewer(palette = "Dark2", guide = "none") +
+  scale_fill_brewer(palette = "Dark2", guide = "none") + 
+  lims(y=c(0,3000)) +
+  theme(
+    strip.background = element_rect(fill="white")
+  ) + 
+  ggdist::stat_gradientinterval(
+    width = .3, inherit.aes = TRUE, 
+    point_size=2
+  ) 
+   
+plot_fit <- g + ylab(expression(Fitovolumen~(m^3~ha^{-1})))
+
+ggsave(plot_fit, 
+       filename = here::here("output/informes/compara_fitovolumen.jpg"), 
+       height = 8, width = 12, units = "cm", dpi = "print")
+
+```
+
+```{r}
+plot_fit
+```
+
+
+
+
+
+
+```{r, eval=FALSE, echo=FALSE}
+g + 
+  geom_boxplot(
+    aes(fill = metodo, fill = after_scale(colorspace::lighten(fill, .5))),
+    size = 1, outlier.size = 1.5
+  )
+
+g + 
+  geom_violin(
+    aes(fill = metodo, fill = after_scale(colorspace::lighten(fill, .5))),
+    size = 1.2
+  )
+
+g + 
+  geom_violin(
+    aes(fill = metodo, fill = after_scale(colorspace::lighten(fill, .5))),
+    size = 1, bw = .8, scale = "count"
+  )
+
+g+ ggdist::stat_halfeye(
+    aes(fill = metodo, fill = after_scale(colorspace::lighten(fill, .7)))
+  )
+
+g +  
+ggdist::stat_gradientinterval(
+    width = .3
+  ) 
+
+library(gghalves)
+
+g + 
+  geom_boxplot(
+    width = .2, fill = "white",
+    size = .9, outlier.shape = NA
+  ) 
++
+
+  geom_jitter(width = .05, alpha = .5)
+
+
++
+  ggdist::stat_halfeye(
+    adjust = .33, ## bandwidth
+    width = .67, 
+    color = NA, ## remove slab interval
+    position = position_nudge(x = .15)
+  ) +
+  gghalves::geom_half_point(
+     side = "l", 
+    range_scale = .3, 
+    alpha = .5, size = 1
+  ) 
+```
+
