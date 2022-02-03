@@ -1,0 +1,579 @@
+---
+title: "modelos_anovas_informe_o2p"
+author: "ajpelu"
+date: "2022-02-03"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(kableExtra)
+library(ggpubr)
+library(tidymv)
+library(broom)
+library(performance)
+library(patchwork)
+library(gtsummary)
+library(plotrix)
+```
+
+
+- Read data 
+- Rename the levels of *zona*: 
+
+  - **Pyric herbivorism** (***HP***, from spanish *Herbivorismo pírico*): old *Quemado con pastoreo*
+  - **Prescribed Fires** (***QP***, from spanish *Quemas Prescritas*): old *Quemado sin pastoreo*
+  
+
+```{r read-data}
+veg_raw <- readxl::read_excel(here::here("data/Datos_congreso_AEET.xlsx")) %>% 
+  janitor::clean_names() 
+
+autumn_fire <- lubridate::ymd("2018-12-18")
+grazing_start <- lubridate::ymd("2019-10-01")
+
+veg <- veg_raw %>% 
+  rename(fecha = fecha_muestreos, 
+         shan = i_shannon, 
+         consumo = tasa_consumo, 
+         riq = riqueza) %>% 
+  mutate(treat = as.factor(case_when(
+    zona == "Quemado con pastoreo" ~ "HP", 
+    TRUE ~ "QP"
+  ))) %>% 
+  mutate(meses = as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1)))) %>% 
+  mutate(quadrat = as.factor(quadrat)) %>% 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  )) %>% 
+  mutate(meses = as.factor(meses)) %>% 
+  mutate(shan.abs = abs(shan))
+
+
+pastoreo <- readxl::read_excel(here::here("data/tablas_horas_pastoreo.xlsx")) %>% 
+  janitor::clean_names() 
+```
+
+
+```{r}
+library(emmeans)
+tabla_postHoc <- function(modelo, cap){
+  posthoc <- emmeans(modelo, ~ meses * treat)
+  contrast(posthoc, "consec", simple = "each", combine = TRUE,
+           adjust = "tukey") %>% 
+  kbl(digits = 4, caption = cap) %>% 
+    kable_paper("hover", full_width = F)
+}
+```
+
+
+# Modelo Efectos de la quema 
+
+## Cobertura vegetal
+
+$$Cobertura \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(rec_veg ~ treat*meses, data=veg)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5), 
+      caption = "ANOVA Efectos Quema, variable = Cobertura") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  veg, x = "meses", y = "rec_veg",
+  color = "treat", palette = "jco",
+  ylab = "Cobertura (%)"
+  ) +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+```
+
+No, se detectan varios problemas: 
+
+- No homogeneidad varianza, 
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc Efectos Quema, variable = Cobertura")
+```
+
+
+## Fitovolumen
+
+$$Fitovolumen \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(fitovol ~ treat*meses, data=veg)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5),
+      caption = "ANOVA Efectos Quema, variable = Fitovolumen") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  veg, x = "meses", y = "fitovol",
+  color = "treat", palette = "jco",
+  ylab = expression(Fitovolumen~(m^3~ha^{-1}))) +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+```
+
+No, se detectan varios problemas: 
+
+- No homogeneidad varianza, 
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+- No problemas con outlier
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc ANOVA Efectos Quema, variable = Fitovolumen")
+```
+
+## Riqueza
+
+$$Riqueza \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(riq ~ treat*meses, data=veg)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5),
+      caption =  "ANOVA Efectos Quema, variable = Riqueza") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  veg, x = "meses", y = "riq",
+  color = "treat", palette = "jco",
+  ylab = "Riqueza") +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+check_distribution(m)
+```
+
+No, se detectan varios problemas: 
+
+- No homogeneidad varianza, 
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+
+Parace también que existe un problema con la distribución de probabilidad de los residuos (habría que especificar otro tipo de distribución: e.g. beta-binomial)
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc Efectos Quema, variable = Riqueza")
+```
+
+
+
+## Diversidad
+
+$$Shannon \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(shan.abs ~ treat*meses, data=veg)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5), 
+      caption = "ANOVA Efectos Quema, variable = Diversidad") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  veg, x = "meses", y = "shan.abs",
+  color = "treat", palette = "jco",
+  ylab = "Diversidad") +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+check_distribution(m)
+```
+
+No, se detectan varios problemas: 
+
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc Efectos Quema, variable = Diversidad")
+```
+
+
+
+
+# Modelo Efectos tras la quema
+
+Quitamos el momento inicial
+```{r}
+vegp <- veg %>% 
+  filter(meses != "-1")
+```
+
+## Cobertura vegetal
+
+$$Cobertura \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(rec_veg ~ treat*meses, data=vegp)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5), 
+      caption = "ANOVA Efectos tras la Quema, variable = Cobertura") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  vegp, x = "meses", y = "rec_veg",
+  color = "treat", palette = "jco",
+  ylab = "Cobertura (%)"
+  ) +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+check_distribution(m)
+```
+
+No, se detectan varios problemas: 
+
+- No homogeneidad varianza, 
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+- Problemas de distribución de los residuos 
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc Efectos tras la Quema, variable = Cobertura")
+```
+
+
+## Fitovolumen
+
+$$Fitovolumen \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(fitovol ~ treat*meses, data=vegp)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5),
+      caption = "ANOVA Efectos tras la Quema, variable = Fitovolumen") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  vegp, x = "meses", y = "fitovol",
+  color = "treat", palette = "jco",
+  ylab = expression(Fitovolumen~(m^3~ha^{-1}))) +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+check_distribution(m)
+```
+
+No, se detectan varios problemas: 
+
+- No homogeneidad varianza, 
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+- No problemas con outlier
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc Efectos tras la Quema, variable = Fitovolumen")
+```
+
+
+## Riqueza
+
+$$Riqueza \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(riq ~ treat*meses, data=vegp)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5),
+      caption = "ANOVA Efectos tras la Quema, variable = Riqueza") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  vegp, x = "meses", y = "riq",
+  color = "treat", palette = "jco",
+  ylab = "Riqueza") +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+check_distribution(m)
+```
+
+No, se detectan varios problemas: 
+
+- No homogeneidad varianza, 
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+
+Parace también que existe un problema con la distribución de probabilidad de los residuos (habría que especificar otro tipo de distribución: e.g. beta-binomial)
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "ANOVA Efectos tras la Quema, variable = Riqueza")
+```
+
+
+## Diversidad
+
+$$Shannon \sim treat + meses + treat \times meses$$
+
+```{r}
+m <- aov(shan.abs ~ treat*meses, data=vegp)
+```
+
+
+### Tabla ANOVA
+
+```{r}
+anova(m) %>% 
+  kbl(digits = c(0,0,3,3,3,5),
+      caption = "ANOVA Efectos tras la Quema, variable = Diversidad") %>% 
+  kable_styling() %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+### Visualizando el modelo 
+
+```{r}
+ggboxplot(
+  vegp, x = "meses", y = "shan.abs",
+  color = "treat", palette = "jco",
+  ylab = "Diversidad") +
+    stat_compare_means(aes(group = treat), label = "p.signif")
+```
+
+### ¿Es el modelo válido?
+
+````{r}
+check_model(m)
+```
+
+```{r}
+check_autocorrelation(m)
+check_homogeneity(m)
+check_normality(m)
+check_outliers(m)
+check_distribution(m)
+```
+
+No, se detectan varios problemas: 
+
+- Problemas de linealirad, 
+- Correlaciones (problamente temporales) entre datos 
+
+Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
+
+
+### Tabla posthoc
+
+```{r}
+tabla_postHoc(m, cap = "Post-hoc Efectos tras la Quema, variable = Diversidad")
+```
+
+
+
