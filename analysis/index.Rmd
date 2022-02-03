@@ -16,3 +16,5 @@ editor_options:
 - [Compsuption rate plot](tasa_consumo.html)
 - [Evolution of the QNDVI](ndvi_pastoreo.html)
 - [Comparison of vegetation methods](compara_methods.html)
+- [Analysis for "O2P Final Report" (Jan-2022)](modelos_anovas_informe_o2p.html)
+
