@@ -22,6 +22,9 @@ library(janitor)
 library(ggdark)
 library(ggforce)
 library(colorspace)
+library(ggstatsplot)
+library(Metrics)
+library(ggdist)
 ```
 
 Comparison of estimation methods for coverage and phytovolume 
@@ -86,8 +89,8 @@ g <- ggplot(cob, aes(x = metodo, y = value, color = metodo, fill = metodo)) +
     strip.background = element_rect(fill="white")
   ) + 
   ggdist::stat_gradientinterval(
-    width = .3, inherit.aes = TRUE,
-        point_size=2
+    width = .5, inherit.aes = TRUE,
+        point_size=3
   ) 
    
 plot_cob <- g + ylab("Cobertura (%)")
@@ -107,19 +110,22 @@ plot_cob
 ```{r}
 theme_set(theme_bw())
 
-g <- ggplot(fit, aes(x = metodo, y = value, color = metodo, fill = metodo)) +
+g <- ggplot(fit, aes(x = metodo, y = value, color = metodo, fill=metodo)) +
   labs(x="Método") +
   scale_color_brewer(palette = "Dark2", guide = "none") +
   scale_fill_brewer(palette = "Dark2", guide = "none") + 
   lims(y=c(0,3000)) +
   theme(
     strip.background = element_rect(fill="white")
-  ) + 
+   ) +
   ggdist::stat_gradientinterval(
-    width = .3, inherit.aes = TRUE, 
-    point_size=2
-  ) 
-   
+  .width = c(0.66, .95), 
+  width =.5, 
+    point_size=4
+  )  
+
+
+  
 plot_fit <- g + ylab(expression(Fitovolumen~(m^3~ha^{-1})))
 
 ggsave(plot_fit, 
@@ -133,6 +139,92 @@ plot_fit
 ```
 
 
+## Correlaciones 
+```{r}
+lm_eqn = function(df){
+  m = lm(dron ~ plot, cob_q);
+  eq <- substitute(r2,
+                   list(r2 = format(summary(m)$r.squared, digits = 3)))
+  as.character(as.expression(eq));                 
+}
+
+df.rmse_global <- cob_q %>% 
+  summarise(rmse = round(
+    Metrics::rmse(plot, dron),4),
+    min = min(plot), 
+    max = max(plot),
+    rmsen.minmax = rmse / (max(plot) - min(plot))*100)
+```
+
+### Cobertura 
+```{r}
+correla_cob <- cob_q %>% 
+  ggplot(aes(x=plot, y = dron)) + 
+  geom_point(size=3, alpha=.6, colour="blue") + 
+  geom_abline(slope=1) +
+  xlab(expression('Cobertura'['campo']*' (%)')) + 
+  ylab(expression('Cobertura'['dron']*' (%)')) +
+  xlim(0,100) + ylim(0,100) + 
+  theme_bw() + 
+  theme(legend.position = "bottom") + 
+  ggtitle("Cobertura vegetal (%): Dron vs. Campo") + 
+  theme(plot.title = element_text(size=12)) + 
+  annotate("text", x= 20, y = 90, 
+           label = paste0("R^2 == ", lm_eqn(cob_q)), 
+           parse = TRUE) +
+  annotate("text", x= 20, y = 80, 
+           label = paste0("RrMSE = ", round(df.rmse_global$rmse, 2), "%"))
+```
+
+```{r}
+ggsave(correla_cob, 
+       filename = here::here("output/informes/correla_cobertura.jpg"), 
+       height = 8, width = 12, units = "cm", dpi = "print")
+```
+
+
+```{r}
+lm_eqn = function(df){
+  m = lm(dron ~ plot, fit_q);
+  eq <- substitute(r2,
+                   list(r2 = format(summary(m)$r.squared, digits = 3)))
+  as.character(as.expression(eq));                 
+}
+
+df.rmse_global <- fit_q %>% 
+  summarise(rmse = round(
+    Metrics::rmse(plot, dron),4),
+    min = min(plot), 
+    max = max(plot),
+    rmsen.minmax = rmse / (max(plot) - min(plot))*100)
+```
+
+
+```{r}
+correla_fit <- fit_q %>% 
+  ggplot(aes(x=plot, y = dron)) + 
+  geom_point(size=2, alpha=.6, colour="blue") + 
+  geom_abline(slope=1) +
+  xlab(expression('Fitovolumen'['campo']~(m^3~ha^{-1}))) + 
+  ylab(expression('Fitovolumen'['dron']~(m^3~ha^{-1}))) +
+  xlim(0,6000) + ylim(0,6000) + 
+  theme_bw() + 
+  theme(legend.position = "bottom") + 
+  ggtitle(expression(Fitovolumen~(m^3~ha^{-1}):~Dron~vs.~Campo)) + 
+  theme(plot.title = element_text(size=12)) + 
+  annotate("text", x= 750, y = 3500, 
+           label = paste0("R^2 == ", lm_eqn(cob_q)), 
+           parse = TRUE) +
+  annotate("text", x= 750, y = 3000, 
+           label = paste0("RrMSE = ", round(df.rmse_global$rmsen.minmax, 2), "%"))
+```
+
+
+```{r}
+ggsave(correla_fit, 
+       filename = here::here("output/informes/correla_fitovolumen.jpg"), 
+       height = 8, width = 12, units = "cm", dpi = "print")
+```
 
 
 
