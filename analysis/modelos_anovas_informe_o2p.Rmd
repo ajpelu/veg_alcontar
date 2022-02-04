@@ -576,67 +576,6 @@ tabla_postHoc(m, cap = "Post-hoc Efectos tras la Quema, variable = Diversidad")
 
 
 
-## Tasa consumo
-
-$$Tasa consumo \sim treat + meses + treat \times meses$$
-
-```{r}
-
-
-m <- aov(shan.abs ~ treat*meses, data=vegp)
-```
-
-
-### Tabla ANOVA
-
-```{r}
-anova(m) %>% 
-  kbl(digits = c(0,0,3,3,3,5),
-      caption = "ANOVA Efectos tras la Quema, variable = Diversidad") %>% 
-  kable_styling() %>% 
-    kable_paper("hover", full_width = F)
-```
-
-
-### Visualizando el modelo 
-
-```{r}
-ggboxplot(
-  vegp, x = "meses", y = "shan.abs",
-  color = "treat", palette = "jco",
-  ylab = "Diversidad") +
-    stat_compare_means(aes(group = treat), label = "p.signif")
-```
-
-### ¿Es el modelo válido?
-
-````{r}
-check_model(m)
-```
-
-```{r}
-check_autocorrelation(m)
-check_homogeneity(m)
-check_normality(m)
-check_outliers(m)
-check_distribution(m)
-```
-
-No, se detectan varios problemas: 
-
-- Problemas de linealirad, 
-- Correlaciones (problamente temporales) entre datos 
-
-Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, ... ver Zuur et al. (2013) 
-
-
-### Tabla posthoc
-
-```{r}
-tabla_postHoc(m, cap = "Post-hoc Efectos tras la Quema, variable = Diversidad")
-```
-
-
 ## Tasa de consumo
 
 $$Consumo \sim treat + meses + treat \times meses$$
