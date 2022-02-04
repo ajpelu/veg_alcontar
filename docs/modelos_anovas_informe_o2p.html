@@ -387,7 +387,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2022-02-03
+<strong>Last updated:</strong> 2022-02-04
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
@@ -478,16 +478,16 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartree6549b5df40dbad8a527c63f86c362de20cec81eftargetblank6549b5da"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/serpam/veg_alcontar/tree/6549b5df40dbad8a527c63f86c362de20cec81ef" target="_blank">6549b5d</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartreee8efda310827d98fa8919d60c59f6588f89f5e04targetblanke8efda3a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/serpam/veg_alcontar/tree/e8efda310827d98fa8919d60c59f6588f89f5e04" target="_blank">e8efda3</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartree6549b5df40dbad8a527c63f86c362de20cec81eftargetblank6549b5da" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartreee8efda310827d98fa8919d60c59f6588f89f5e04targetblanke8efda3a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/serpam/veg_alcontar/tree/6549b5df40dbad8a527c63f86c362de20cec81ef" target="_blank">6549b5d</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/serpam/veg_alcontar/tree/e8efda310827d98fa8919d60c59f6588f89f5e04" target="_blank">e8efda3</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -497,8 +497,16 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
 
+Untracked files:
+    Untracked:  data/Tasa_consumo.xlsx
+    Untracked:  output/informes/correla_cobertura.jpg
+    Untracked:  output/informes/correla_fitovolumen.jpg
+
 Unstaged changes:
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/compara_methods.Rmd
+    Modified:   data/Datos_congreso_AEET.xlsx
+    Modified:   output/informes/compara_cobertura.jpg
+    Modified:   output/informes/compara_fitovolumen.jpg
 
 </code></pre>
 <p>
@@ -537,6 +545,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/serpam/veg_alcontar/blob/e8efda310827d98fa8919d60c59f6588f89f5e04/analysis/modelos_anovas_informe_o2p.Rmd" target="_blank">e8efda3</a>
+</td>
+<td>
+ajpelu
+</td>
+<td>
+2022-02-04
+</td>
+<td>
+update consumo
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/serpam/veg_alcontar/812fe04e745d18b4f35cf66ec191a04cd96a1aa4/docs/modelos_anovas_informe_o2p.html" target="_blank">812fe04</a>
+</td>
+<td>
+ajpelu
+</td>
+<td>
+2022-02-03
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -5681,6 +5723,1055 @@ QP - HP
 </td>
 <td style="text-align:right;">
 0.9525
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="tasa-consumo" class="section level2">
+<h2>Tasa consumo</h2>
+<p><span class="math display">\[Tasa consumo \sim treat + meses + treat \times meses\]</span></p>
+<div id="tabla-anova-8" class="section level3">
+<h3>Tabla ANOVA</h3>
+<table class="table lightable-paper lightable-hover" style="margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+ANOVA Efectos tras la Quema, variable = Diversidad
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Df
+</th>
+<th style="text-align:right;">
+Sum Sq
+</th>
+<th style="text-align:right;">
+Mean Sq
+</th>
+<th style="text-align:right;">
+F value
+</th>
+<th style="text-align:right;">
+Pr(&gt;F)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1.490
+</td>
+<td style="text-align:right;">
+5.840
+</td>
+<td style="text-align:right;">
+0.016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+2.032
+</td>
+<td style="text-align:right;">
+7.963
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat:meses
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.179
+</td>
+<td style="text-align:right;">
+0.703
+</td>
+<td style="text-align:right;">
+0.591
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+79
+</td>
+<td style="text-align:right;">
+0.255
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizando-el-modelo-8" class="section level3">
+<h3>Visualizando el modelo</h3>
+<p><img src="figure/modelos_anovas_informe_o2p.Rmd/unnamed-chunk-53-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="es-el-modelo-válido-8" class="section level3">
+<h3>¿Es el modelo válido?</h3>
+<p><img src="figure/modelos_anovas_informe_o2p.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Warning: Autocorrelated residuals detected (p &lt; .001).</code></pre>
+<pre><code>OK: There is not clear evidence for different variances across groups (Bartlett Test, p = 0.863).</code></pre>
+<pre><code>Warning: Non-normality of residuals detected (p &lt; .001).</code></pre>
+<pre><code>OK: No outliers detected.</code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+         Distribution Probability
+               normal         94%
+            bernoulli          3%
+ poisson (zero-infl.)          3%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+      weibull         84%
+       normal          9%
+         beta          3%</code></pre>
+<p>No, se detectan varios problemas:</p>
+<ul>
+<li>Problemas de linealirad,</li>
+<li>Correlaciones (problamente temporales) entre datos</li>
+</ul>
+<p>Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, … ver Zuur et al. (2013)</p>
+</div>
+<div id="tabla-posthoc-8" class="section level3">
+<h3>Tabla posthoc</h3>
+<table class=" lightable-paper lightable-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Post-hoc Efectos tras la Quema, variable = Diversidad
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+treat
+</th>
+<th style="text-align:left;">
+meses
+</th>
+<th style="text-align:left;">
+contrast
+</th>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+t.ratio
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+12 - 5
+</td>
+<td style="text-align:right;">
+-0.1828
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-1.4475
+</td>
+<td style="text-align:right;">
+0.8768
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+17 - 12
+</td>
+<td style="text-align:right;">
+0.4215
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+3.3381
+</td>
+<td style="text-align:right;">
+0.0122
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+22 - 17
+</td>
+<td style="text-align:right;">
+-0.3269
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-2.5884
+</td>
+<td style="text-align:right;">
+0.1236
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+29 - 22
+</td>
+<td style="text-align:right;">
+0.0749
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+0.5928
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+12 - 5
+</td>
+<td style="text-align:right;">
+0.0446
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+0.3536
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+17 - 12
+</td>
+<td style="text-align:right;">
+0.4674
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+3.7017
+</td>
+<td style="text-align:right;">
+0.0033
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+22 - 17
+</td>
+<td style="text-align:right;">
+-0.4754
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-3.7647
+</td>
+<td style="text-align:right;">
+0.0026
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+29 - 22
+</td>
+<td style="text-align:right;">
+0.0783
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+0.6199
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.2872
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-2.2747
+</td>
+<td style="text-align:right;">
+0.2670
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.0598
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-0.4736
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+17
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.0139
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-0.1100
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+22
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.1624
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-1.2863
+</td>
+<td style="text-align:right;">
+0.9444
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.1590
+</td>
+<td style="text-align:right;">
+0.1263
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-1.2591
+</td>
+<td style="text-align:right;">
+0.9525
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="tasa-de-consumo" class="section level2">
+<h2>Tasa de consumo</h2>
+<p><span class="math display">\[Consumo \sim treat + meses + treat \times meses\]</span></p>
+<div id="tabla-anova-9" class="section level3">
+<h3>Tabla ANOVA</h3>
+<table class="table lightable-paper lightable-hover" style="margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+ANOVA Efectos tras la Quema, variable = Tasa Consumo
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Df
+</th>
+<th style="text-align:right;">
+Sum Sq
+</th>
+<th style="text-align:right;">
+Mean Sq
+</th>
+<th style="text-align:right;">
+F value
+</th>
+<th style="text-align:right;">
+Pr(&gt;F)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+5.980
+</td>
+<td style="text-align:right;">
+35.126
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+7.557
+</td>
+<td style="text-align:right;">
+44.389
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat:meses
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+1.063
+</td>
+<td style="text-align:right;">
+6.242
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+53
+</td>
+<td style="text-align:right;">
+0.170
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizando-el-modelo-9" class="section level3">
+<h3>Visualizando el modelo</h3>
+<p><img src="figure/modelos_anovas_informe_o2p.Rmd/unnamed-chunk-59-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="es-el-modelo-válido-9" class="section level3">
+<h3>¿Es el modelo válido?</h3>
+<p><img src="figure/modelos_anovas_informe_o2p.Rmd/unnamed-chunk-60-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Warning: Autocorrelated residuals detected (p = 0.002).</code></pre>
+<pre><code>Warning: Variances differ between groups (Bartlett Test, p = 0.000).</code></pre>
+<pre><code>Warning: Non-normality of residuals detected (p &lt; .001).</code></pre>
+<pre><code>OK: No outliers detected.</code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         53%
+      tweedie         34%
+         beta          9%
+
+Predicted Distribution of Response
+
+         Distribution Probability
+              tweedie         88%
+                 beta          6%
+ poisson (zero-infl.)          6%</code></pre>
+<p>No, se detectan varios problemas:</p>
+<ul>
+<li>No homogeneidad varianza,</li>
+<li>Problemas de linealirad,</li>
+<li>Correlaciones (problamente temporales) entre datos</li>
+</ul>
+<p>Por tanto, las conclusiones que se obtuvieran de este modelado no son válidas!!. Alternativas: Modelos GLMMs, Modelos GAMMs, … ver Zuur et al. (2013)</p>
+</div>
+<div id="tabla-posthoc-9" class="section level3">
+<h3>Tabla posthoc</h3>
+<table class=" lightable-paper lightable-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Post-hoc Efectos tras la Quema, variable = Tasa consumo
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+treat
+</th>
+<th style="text-align:left;">
+meses
+</th>
+<th style="text-align:left;">
+contrast
+</th>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+t.ratio
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+12 - 5
+</td>
+<td style="text-align:right;">
+1.2113
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+11.7427
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+17 - 12
+</td>
+<td style="text-align:right;">
+-0.7063
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-6.8469
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+22 - 17
+</td>
+<td style="text-align:right;">
+-0.2596
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-2.5169
+</td>
+<td style="text-align:right;">
+0.1491
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+29 - 22
+</td>
+<td style="text-align:right;">
+-0.0007
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-0.0069
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+12 - 5
+</td>
+<td style="text-align:right;">
+0.5609
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+5.4377
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+17 - 12
+</td>
+<td style="text-align:right;">
+-0.4509
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-4.3713
+</td>
+<td style="text-align:right;">
+0.0002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+22 - 17
+</td>
+<td style="text-align:right;">
+0.0404
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+0.3912
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+QP
+</td>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+29 - 22
+</td>
+<td style="text-align:right;">
+-0.1323
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-1.2822
+</td>
+<td style="text-align:right;">
+0.9457
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+<td style="text-align:right;">
+1.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.6504
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-6.3050
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+17
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.3950
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-3.8294
+</td>
+<td style="text-align:right;">
+0.0020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+22
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.0950
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-0.9214
+</td>
+<td style="text-align:right;">
+0.9968
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+QP - HP
+</td>
+<td style="text-align:right;">
+-0.2266
+</td>
+<td style="text-align:right;">
+0.1032
+</td>
+<td style="text-align:right;">
+310
+</td>
+<td style="text-align:right;">
+-2.1967
+</td>
+<td style="text-align:right;">
+0.3159
 </td>
 </tr>
 </tbody>
