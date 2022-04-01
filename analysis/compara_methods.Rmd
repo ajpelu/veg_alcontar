@@ -33,6 +33,10 @@ library(tweedie)
 library(statmod)
 library(PMCMR)
 library(PMCMRplus)
+
+# Notas sobre anova
+# https://bcdudek.net/anova/index.html
+# http://www.alexanderdemos.org/ANOVA6.html
 ```
 
 Comparison of estimation methods for coverage, phytovolume, richness and diversity (shannon)
@@ -100,8 +104,11 @@ riq_tlonger <- riq_t %>%
   pivot_longer(cols = c("line_intercept","point_quadrat","point_quadrat_extenso","quadrat_parcela")) %>% 
   mutate(variable = "riqueza", metodo = name)
 
+div_tlonger <- div_t %>% 
+  pivot_longer(cols = c("line_intercept","point_quadrat")) %>% 
+  mutate(variable = "diversidad", metodo = name)
 
-d <- bind_rows(cober, fit, riqdiv_q_longer, riq_tlonger)
+d <- bind_rows(cober, fit, riqdiv_q_longer, riq_tlonger, div_tlonger)
 
 ```
 
@@ -198,6 +205,7 @@ comparaCV <- function(x, group_variable) {
 - Summary values  
 
 ```{r}
+# ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
 cob <- d %>% filter(variable == "Cobertura") %>% 
   mutate(metodo = fct_relevel(metodo, 
                               c("quadrat","dronQ","line_intercept","point_quadrat", "dronT"))) 
@@ -279,4 +287,268 @@ cv_cob %>%
 
 
 
+
+
+
+# Fitovolumen 
+
+- Summary values  
+
+```{r}
+fit <- d %>% filter(variable == "Fitovolumen") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","dronQ","line_intercept","dronT"))) 
+```
+
+
+```{r}
+sfit <- fit %>% group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            n = length(value))
+
+sfit %>% kable(digits = 2,
+               caption = "Fitovolumen || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+## Modelo 
+
+- Aplicamos un modelo de Kruskal-Wallis con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni). 
+- Los resultados son los siguientes: 
+
+```{r}
+kw_fit <- fit %>% rename(fitovolumen = value) %>% 
+  comparaKW('fitovolumen', 'metodo', alpha_posthoc = 0.05)
+
+kw_fit$KW %>% kbl() %>% 
+   kable_paper("hover", full_width = F)
+```
+
+- Posteriormente computamos las pruebas post-hoc 
+
+```{r}
+kw_fit$post_hoc %>% 
+  kable(digits = c(0,2,4), caption = "Fitovolumen || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+```{r}
+plot_fit <- ggbetweenstats(
+  data = fit, x = metodo, y = value, 
+  type = "np", p.adjust.method = "bonferroni", 
+  plot.type = "box",
+  pairwise.display = "s", 
+  results.subtitle = FALSE,
+  ylab=expression(Fitovolumen~(m^3~ha^{-1})),
+  centrality.label.args = 
+    list(size = 3, nudge_x = -0.4)) 
+
+ggsave(plot_fit, 
+        filename = here::here("output/paper_SUDOE/compara_fitovolumen.jpg"), 
+        height = 15, width = 20, units = "cm", dpi = "print")
+```
+
+
+```{r}
+plot_fit
+```
+
+
+## Coeficiente de Variación 
+
+Analizamos los datos de CV, si son diferentes significativamente. Aplicamos el test MSLRT (Modified signed-likelihood ratio test) para cada uno de los pares de métodos. 
+
+```{r}
+cv_fit <- comparaCV(sfit, 'metodo')
+
+cv_fit %>% 
+  kable(digits = c(0,0,2,5), caption = "Fitovolumen || Pairwise Modified signed-likelihood ratio test (SLRT) for equality of CVs") %>% 
+    kable_paper("hover", full_width = F)
+
+```
+
+
+# Richness 
+
+- Summary values  
+
+```{r}
+riq <- d %>% filter(variable == "riqueza") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","line_intercept","point_quadrat","point_quadrat_extenso","quadrat_parcela"))) 
+```
+
+
+```{r}
+sriq <- riq %>% group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            n = length(value))
+
+sriq %>% kable(digits = 2,
+               caption = "Richness || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+## Modelo 
+
+- Aplicamos un modelo de Kruskal-Wallis con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni). 
+- Los resultados son los siguientes: 
+
+```{r}
+kw_riq <- riq %>% rename(riqueza = value) %>% 
+  comparaKW('riqueza', 'metodo', alpha_posthoc = 0.05)
+
+kw_riq$KW %>% kbl() %>% 
+   kable_paper("hover", full_width = F)
+
+```
+
+- Posteriormente computamos las pruebas post-hoc 
+
+```{r}
+kw_riq$post_hoc %>% 
+  kable(digits = c(0,2,4), caption = "Riqueza || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+```{r}
+plot_riq <- ggbetweenstats(
+  data = riq, x = metodo, y = value, 
+  type = "np", p.adjust.method = "bonferroni", 
+  plot.type = "box",
+  pairwise.display = "s", 
+  results.subtitle = FALSE,
+  ylab="Riqueza",
+  centrality.label.args = 
+    list(size = 3, nudge_x = -0.4)) 
+
+ggsave(plot_riq, 
+        filename = here::here("output/paper_SUDOE/compara_riqueza.jpg"), 
+        height = 15, width = 20, units = "cm", dpi = "print")
+```
+
+
+```{r}
+plot_riq
+```
+
+
+## Coeficiente de Variación 
+
+Analizamos los datos de CV, si son diferentes significativamente. Aplicamos el test MSLRT (Modified signed-likelihood ratio test) para cada uno de los pares de métodos. 
+
+```{r}
+cv_riq <- comparaCV(sriq, 'metodo')
+
+cv_riq %>% 
+  kable(digits = c(0,0,2,5), caption = "Riqueza || Pairwise Modified signed-likelihood ratio test (SLRT) for equality of CVs") %>% 
+    kable_paper("hover", full_width = F)
+
+```
+
+
+# Shannon 
+
+- Summary values  
+
+```{r}
+div <- d %>% filter(variable == "diversidad") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","line_intercept","point_quadrat")),
+         value = abs(value)) 
+```
+
+
+```{r}
+sdiv <- div %>% group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            n = length(value))
+
+sdiv %>% kable(digits = 2,
+               caption = "Richness || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+## Modelo 
+
+- Aplicamos un modelo de ANOVA con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni). 
+- Los resultados son los siguientes: 
+
+```{r}
+aov_div <- aov(value~metodo, div)
+
+check_homogeneity(aov_div)
+check_normality(aov_div)
+
+options(knitr.kable.NA = '')
+aov_div %>% 
+  report_table() %>% 
+  kbl(digits = c(0,2,0,2,2,5,3,3,3)) %>% 
+  kable_paper("hover", full_width = F)
+```
+
+```{r}
+aov_div %>% report()
+```
+
+- Posteriormente computamos las pruebas post-hoc 
+
+```{r}
+ee <- emmeans::emmeans(aov_div, ~metodo)
+pairs(ee, adjust="bonf") %>% 
+  kbl(digits=c(0,3,3,0,2,4),
+      caption = " Diversidad || ANOVA - Post-hoc Bonferroni adjustment")%>% 
+   kable_paper("hover", full_width = F)
+```
+
+
+
+```{r}
+plot_div <- ggbetweenstats(
+  data = div, x = metodo, y = value, 
+  type = "p", p.adjust.method = "bonferroni", 
+  plot.type = "box",
+  pairwise.display = "s", 
+  results.subtitle = FALSE,
+  ylab="Diversidad",
+  centrality.label.args = 
+    list(size = 3, nudge_x = -0.4)) 
+
+ggsave(plot_div, 
+        filename = here::here("output/paper_SUDOE/compara_diversidad.jpg"), 
+        height = 15, width = 20, units = "cm", dpi = "print")
+```
+
+
+```{r}
+plot_div
+```
+
+
+## Coeficiente de Variación 
+
+Analizamos los datos de CV, si son diferentes significativamente. Aplicamos el test MSLRT (Modified signed-likelihood ratio test) para cada uno de los pares de métodos. 
+
+```{r}
+cv_div<- comparaCV(sdiv, 'metodo')
+
+cv_div %>% 
+  kable(digits = c(0,0,2,5), caption = "Diversidad || Pairwise Modified signed-likelihood ratio test (SLRT) for equality of CVs") %>% 
+    kable_paper("hover", full_width = F)
+
+```
 
