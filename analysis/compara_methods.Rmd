@@ -435,21 +435,21 @@ corrplot(corr, order = 'alphabet',
 ```{r}
 correla_pares <- function(df, vselected){ 
   
-  if (vselected %in% c("quadrat medio","quadrat media ponderada")){
-    
-  dftemp <- df %>% 
-    filter(metodo %in% c(vselected, "line_intercept", "point_quadrat")) %>% 
-    pivot_wider(names_from = metodo) %>% 
-    pivot_longer(cols = -c(vselected, parcela))
-  
-  
-    } else {
+  # if (vselected %in% c("quadrat medio","quadrat media ponderada")){
+  #   
+  # dftemp <- df %>% 
+  #   filter(metodo %in% c(vselected, "line_intercept", "point_quadrat")) %>% 
+  #   pivot_wider(names_from = metodo) %>% 
+  #   pivot_longer(cols = -c(vselected, parcela))
+  # 
+  # 
+  #   } else {
       
   dftemp <- df %>% 
     pivot_wider(names_from = metodo) %>% 
     pivot_longer(cols = -c(vselected, parcela))
   
-      } 
+#      } 
   
   ggscatter(dftemp, x = "value", 
           y = vselected, 
@@ -481,13 +481,13 @@ cob_doce %>% filter(metodo != "dronT") %>% correla_pares("point_quadrat")
 cob_doce %>% filter(metodo != "dronT") %>% correla_pares("line_intercept")
 ```
 
-#### Qm ~ PQ,LI
+#### Qm ~ PQ,LI,Qp
 
 ```{r}
 cob_doce %>% filter(metodo != "dronT") %>% correla_pares("quadrat medio")
 ```
 
-#### Qmp ~ PQ,LI
+#### Qp ~ PQ,LI,Qm
 
 ```{r}
 cob_doce %>% filter(metodo != "dronT") %>% correla_pares("quadrat media ponderada")
