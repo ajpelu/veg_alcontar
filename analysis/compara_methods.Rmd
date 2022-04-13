@@ -21,6 +21,7 @@ library(here)
 library(janitor)
 library(ggdark)
 library(ggforce)
+library(ggpubr)
 library(colorspace)
 library(ggstatsplot)
 library(Metrics)
@@ -33,6 +34,7 @@ library(tweedie)
 library(statmod)
 library(PMCMR)
 library(PMCMRplus)
+library(ggtext)
 
 # Notas sobre anova
 # https://bcdudek.net/anova/index.html
@@ -226,31 +228,180 @@ scob %>% kable(digits = 2,
     kable_paper("hover", full_width = F)
 ```
 
-## Modelo 
 
-- Aplicamos un modelo de Kruskal-Wallis con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni). 
-- Los resultados son los siguientes: 
+## 1.1 Comparación cobertura Quadrat - DronQ 
+
+- Comprobamos Normalidad y Homocedascticidad 
 
 ```{r}
-kw_cob <- cob %>% rename(cobertura = value) %>% 
+cob_selected <- cob %>% filter(metodo %in% c("dronQ","quadrat"))
+```
+
+- Normality? 
+
+```{r}
+cob_selected %>% 
+  ggplot(aes(x=value, y=..density..)) + 
+  geom_histogram(fill="blue") + 
+  geom_density() + 
+  facet_wrap(~metodo) + 
+  theme_classic()
+```
+
+```{r}
+s <- shapiro.test(cob_selected$value)
+
+# s$statistic
+# scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE)
+
+s
+```
+
+
+Los resultados indican que los datos no son normales (`r paste0("W = ",round(s$statistic,2),  "; ",  scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`)
+
+- Homogeneidad de la varianza? 
+
+```{r}
+b <- bartlett.test(cob_selected$value, cob_selected$metodo, data=cob_selected)
+b 
+```
+
+Según los resultados, no parece existir heterogeneidad en las varianzas (`r paste0("Bartlett's K-squared = ", round(b$statistic, 2),"; ", scales::pvalue(b$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`)
+
+Por tanto, dos opciones: aplicar método wilcox.test o transformar datos (log) y aplicar t-test 
+
+
+- Wilcox test 
+```{r}
+w <- wilcox.test(value ~ metodo, data = cob_selected)
+w 
+```
+
+
+- T-test de datos transformados (log) 
+
+```{r}
+cob_selected <- cob_selected %>% 
+  mutate(value_log = log(value))
+
+tt <- t.test(value_log ~ metodo, data = cob_selected)
+```
+
+En cualquier caso obtenemos los siguientes resultados: 
+- Existen diferencias significativas tanto si usamos el test no paramétrico de Wilcoxon (`r paste0("W = ", round(w$statistic, 2),"; ", scales::pvalue(w$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`), como si aplicamos el test paramétrico a los datos transformados (`r paste0("t = ", round(tt$statistic, 3),"; ", scales::pvalue(tt$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`). De forma gráfica 
+
+```{r}
+ggbetweenstats(cob_selected,
+               x = metodo, 
+               y= value, 
+               type = "np")
+```
+
+
+### Correlación Quadrat - Dron Q 
+
+Ver resultados presentados al [congreso forestal](https://serpam.github.io/droneveg_alcontar/analysis_congreso_forestal.html)
+
+
+## 1.2 Correlación de dronT (500 m2) con Line Intercept y PointQuadrat
+
+```{r}
+cob_p <- cob %>% 
+  filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+  dplyr::select(metodo, value) %>% 
+  group_by(metodo) %>% 
+  mutate(row = row_number()) %>% 
+  pivot_wider(names_from = metodo, values_from = value) %>% 
+  dplyr::select(-row) %>% 
+  pivot_longer(cols=c("line_intercept", "point_quadrat"))
+```
+
+```{r}
+ggscatter(cob_p, 
+          x = "value", 
+          y = "dronT",
+          add = "reg.line",
+  # add.params = list(color = "blue", fill = "lightgray"),
+  conf.int = TRUE, 
+  color = "name", shape = "name", 
+  xlab=expression('Cobertura (%)'), 
+  ylab=expression('Cobertura'['dron 500 '*m^2]*' (%)')) + 
+  ylim(c(0,65)) + 
+  xlim(c(0,65)) + 
+  stat_cor(
+    label.y.npc="top", label.x.npc = "left",
+    aes(color = name, 
+        label = paste(..rr.label.., ..p.label.., sep = "~`,`~"))
+    )  + 
+  
+  geom_abline(slope = 1) 
+```
+
+
+## 1.3 Comparación Line-Intercept, Quadrat, PointQuadrat
+
+Vamos a realizar la comparación seleccionando para cada parcela (n=12) un valor de cobertura de quadrats. Éste valor se calcula mediante dos aproximaciones: 
+
+- Promediando para cada parcela el valor de los quadrats
+- Utilizando las medias ponderadas (valores de cobertura de los quadrats ponderados en función de la distribución inicial)
+
+```{r}
+cob_q %>% 
+  group_by(parcela) %>% 
+  summarize(value = mean(plot)) %>% 
+  mutate(metodo = "quadrat medio")
+
+cob_qcorrected <- readxl::read_excel(here::here("data/Cobertura_fitovolumen_corregido_parcela.xlsx")) %>% janitor::clean_names() %>% 
+  dplyr::select(parcela, value=cobertura_cor) %>% 
+  mutate(metodo = "quadrat media ponderada")
+```
+
+```{r}
+cob_doce <- 
+  cob %>% 
+ filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+  dplyr::select(parcela, value, metodo) %>% 
+  bind_rows((
+    cob_q %>% 
+  group_by(parcela) %>% 
+  summarize(value = mean(plot)) %>% 
+  mutate(metodo = "quadrat medio"))) %>% 
+    bind_rows(cob_qcorrected)
+  
+```
+
+
+
+```{r}
+kw_cob_doce <- cob_doce %>% filter(metodo != "dronT") %>% 
+    mutate(metodo = fct_relevel(metodo, 
+                              c("line_intercept",
+                                "point_quadrat", 
+                                "quadrat medio",
+                                "quadrat media ponderada"))) %>% 
+  rename(cobertura = value) %>% 
   comparaKW('cobertura', 'metodo', alpha_posthoc = 0.05)
 
-kw_cob$KW %>% kbl() %>% 
-   kable_paper("hover", full_width = F)
+kw_cob_doce$KW %>% kbl() %>% 
+  kable_paper("hover", full_width = F)
+
 ```
 
 - Posteriormente computamos las pruebas post-hoc 
 
 ```{r}
-kw_cob$post_hoc %>% 
+kw_cob_doce$post_hoc %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
   kable(digits = c(0,2,4), caption = "Cobertura || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
     kable_paper("hover", full_width = F)
 ```
 
 
 ```{r}
-plot_cob <- ggbetweenstats(
-  data = cob, x = metodo, y = value, 
+ggbetweenstats(
+  data = (cob_doce %>% filter(metodo != "dronT")), x = metodo, y = value, 
+  # data = cob_doce, x = metodo, y = value, 
   type = "np", p.adjust.method = "bonferroni", 
   plot.type = "box",
   pairwise.display = "s", 
@@ -258,15 +409,88 @@ plot_cob <- ggbetweenstats(
   ylab = "Cobertura (%)",
   centrality.label.args = 
     list(size = 3, nudge_x = -0.4)) 
+```
 
-ggsave(plot_cob, 
-        filename = here::here("output/paper_SUDOE/compara_cobertura.jpg"), 
-        height = 15, width = 20, units = "cm", dpi = "print")
+Observamos que no hay diferencias entre LI, y los quadrats medios, ni quadrats ponderado. 
+
+### Correlaciones 
+
+```{r}
+library(corrplot)
+
+corr <- cob_doce %>% 
+  filter(metodo != "dronT") %>% 
+  pivot_wider(names_from = metodo) %>% dplyr::select(-parcela) %>% 
+  cor()
+  
+corrplot(corr, order = 'alphabet', 
+         addCoef.col = 'black', tl.pos = 'd',
+         cl.pos = 'n', col = COL2('PiYG'), 
+         method = "ellipse",
+         type = "lower")
+
 ```
 
 
 ```{r}
-plot_cob
+correla_pares <- function(df, vselected){ 
+  
+  if (vselected %in% c("quadrat medio","quadrat media ponderada")){
+    
+  dftemp <- df %>% 
+    filter(metodo %in% c(vselected, "line_intercept", "point_quadrat")) %>% 
+    pivot_wider(names_from = metodo) %>% 
+    pivot_longer(cols = -c(vselected, parcela))
+  
+  
+    } else {
+      
+  dftemp <- df %>% 
+    pivot_wider(names_from = metodo) %>% 
+    pivot_longer(cols = -c(vselected, parcela))
+  
+      } 
+  
+  ggscatter(dftemp, x = "value", 
+          y = vselected, 
+          add = "reg.line", conf.int = TRUE, 
+          color = "name", shape = "name",
+          xlab = "Cobertura (%)",
+          ylab = paste0("Cobertura (%) ", vselected)) +  
+  ylim(c(0,65)) + 
+  xlim(c(0,65)) +
+  geom_abline(slope = 1) +
+  stat_cor(
+    label.y.npc="top", label.x.npc = "left",
+    aes(color = name, 
+        label = paste(..rr.label.., ..p.label.., sep = "~`,`~"))
+    )  
+  
+  }
+```
+
+#### PQ ~ LI,Qm,Qmp 
+
+```{r}
+cob_doce %>% filter(metodo != "dronT") %>% correla_pares("point_quadrat")
+```
+
+#### LI ~ PQ,Qm,Qmp 
+
+```{r}
+cob_doce %>% filter(metodo != "dronT") %>% correla_pares("line_intercept")
+```
+
+#### Qm ~ PQ,LI
+
+```{r}
+cob_doce %>% filter(metodo != "dronT") %>% correla_pares("quadrat medio")
+```
+
+#### Qmp ~ PQ,LI
+
+```{r}
+cob_doce %>% filter(metodo != "dronT") %>% correla_pares("quadrat media ponderada")
 ```
 
 
@@ -282,11 +506,6 @@ cv_cob %>%
     kable_paper("hover", full_width = F)
 
 ```
-
-
-
-
-
 
 
 
