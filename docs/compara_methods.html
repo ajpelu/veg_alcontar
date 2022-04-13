@@ -387,7 +387,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2022-04-01
+<strong>Last updated:</strong> 2022-04-13
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
@@ -478,16 +478,16 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartree2a0a2cb476074456fe9994598a960e427d1cb5b0targetblank2a0a2cba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/serpam/veg_alcontar/tree/2a0a2cb476074456fe9994598a960e427d1cb5b0" target="_blank">2a0a2cb</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartree8ac0cd21cfaf5e2632b8055dabc2166ec4cd7c12targetblank8ac0cd2a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/serpam/veg_alcontar/tree/8ac0cd21cfaf5e2632b8055dabc2166ec4cd7c12" target="_blank">8ac0cd2</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartree2a0a2cb476074456fe9994598a960e427d1cb5b0targetblank2a0a2cba" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartree8ac0cd21cfaf5e2632b8055dabc2166ec4cd7c12targetblank8ac0cd2a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/serpam/veg_alcontar/tree/2a0a2cb476074456fe9994598a960e427d1cb5b0" target="_blank">2a0a2cb</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/serpam/veg_alcontar/tree/8ac0cd21cfaf5e2632b8055dabc2166ec4cd7c12" target="_blank">8ac0cd2</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -496,6 +496,12 @@ Note that you need to be careful to ensure that all relevant files for the analy
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  data/Cobertura_fitovolumen_corregido_parcela.xlsx
+
+Unstaged changes:
+    Modified:   output/paper_SUDOE/compara_cobertura.jpg
 
 </code></pre>
 <p>
@@ -534,6 +540,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/serpam/veg_alcontar/blob/8ac0cd21cfaf5e2632b8055dabc2166ec4cd7c12/analysis/compara_methods.Rmd" target="_blank">8ac0cd2</a>
+</td>
+<td>
+ajpelu
+</td>
+<td>
+2022-04-13
+</td>
+<td>
+add new analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/serpam/veg_alcontar/a3d3eb4f78eb3a222e3e3aff75da17a56eb183e7/docs/compara_methods.html" target="_blank">a3d3eb4</a>
+</td>
+<td>
+ajpelu
+</td>
+<td>
+2022-04-01
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -802,12 +842,74 @@ dronT
 </tr>
 </tbody>
 </table>
-<div id="modelo" class="section level2">
-<h2>Modelo</h2>
+<div id="comparación-cobertura-quadrat---dronq" class="section level2">
+<h2>1.1 Comparación cobertura Quadrat - DronQ</h2>
 <ul>
-<li>Aplicamos un modelo de Kruskal-Wallis con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni).</li>
-<li>Los resultados son los siguientes:</li>
+<li><p>Comprobamos Normalidad y Homocedascticidad</p></li>
+<li><p>Normality?</p></li>
 </ul>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  cob_selected$value
+W = 0.89104, p-value = 1.299e-10</code></pre>
+<p>Los resultados indican que los datos no son normales (W = 0.89; p&lt;0.0001)</p>
+<ul>
+<li>Homogeneidad de la varianza?</li>
+</ul>
+<pre><code>
+    Bartlett test of homogeneity of variances
+
+data:  cob_selected$value and cob_selected$metodo
+Bartlett&#39;s K-squared = 1.5582, df = 1, p-value = 0.2119</code></pre>
+<p>Según los resultados, no parece existir heterogeneidad en las varianzas (Bartlett’s K-squared = 1.56; p=0.2119)</p>
+<p>Por tanto, dos opciones: aplicar método wilcox.test o transformar datos (log) y aplicar t-test</p>
+<ul>
+<li>Wilcox test</li>
+</ul>
+<pre><code>
+    Wilcoxon rank sum test with continuity correction
+
+data:  value by metodo
+W = 5967.5, p-value = 0.0004154
+alternative hypothesis: true location shift is not equal to 0</code></pre>
+<ul>
+<li>T-test de datos transformados (log)</li>
+</ul>
+<p>En cualquier caso obtenemos los siguientes resultados: - Existen diferencias significativas tanto si usamos el test no paramétrico de Wilcoxon (W = 5967.5; p=0.0004), como si aplicamos el test paramétrico a los datos transformados (t = 3.997; p&lt;0.0001). De forma gráfica</p>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="correlación-quadrat---dron-q" class="section level3">
+<h3>Correlación Quadrat - Dron Q</h3>
+<p>Ver resultados presentados al <a href="https://serpam.github.io/droneveg_alcontar/analysis_congreso_forestal.html">congreso forestal</a></p>
+</div>
+</div>
+<div id="correlación-de-dront-500-m2-con-line-intercept-y-pointquadrat" class="section level2">
+<h2>1.2 Correlación de dronT (500 m2) con Line Intercept y PointQuadrat</h2>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="comparación-line-intercept-quadrat-pointquadrat" class="section level2">
+<h2>1.3 Comparación Line-Intercept, Quadrat, PointQuadrat</h2>
+<p>Vamos a realizar la comparación seleccionando para cada parcela (n=12) un valor de cobertura de quadrats. Éste valor se calcula mediante dos aproximaciones:</p>
+<ul>
+<li>Promediando para cada parcela el valor de los quadrats</li>
+<li>Utilizando las medias ponderadas (valores de cobertura de los quadrats ponderados en función de la distribución inicial)</li>
+</ul>
+<pre><code># A tibble: 12 x 3
+   parcela  value metodo       
+   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;        
+ 1 AL_NP_13  36.4 quadrat medio
+ 2 AL_NP_7   21.8 quadrat medio
+ 3 AL_NP_8   33   quadrat medio
+ 4 AL_NP_9   29.9 quadrat medio
+ 5 AL_P_11   24.9 quadrat medio
+ 6 AL_P_12   33.9 quadrat medio
+ 7 AL_P_14   31.8 quadrat medio
+ 8 AL_P_4    37.5 quadrat medio
+ 9 AL_PR_15  29.8 quadrat medio
+10 AL_PR_16  32.6 quadrat medio
+11 AL_PR_17  21.2 quadrat medio
+12 AL_PR_18  26.4 quadrat medio</code></pre>
 <table class=" lightable-paper lightable-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -831,13 +933,13 @@ mi_variable
 <tbody>
 <tr>
 <td style="text-align:right;">
-36.66969
+27.11094
 </td>
 <td style="text-align:right;">
-2e-07
+5.6e-06
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 <td style="text-align:left;">
 Kruskal-Wallis rank sum test
@@ -863,7 +965,7 @@ H0
 <th style="text-align:right;">
 statistic
 </th>
-<th style="text-align:right;">
+<th style="text-align:left;">
 p.value
 </th>
 </tr>
@@ -871,123 +973,90 @@ p.value
 <tbody>
 <tr>
 <td style="text-align:left;">
-quadrat = dronQ
-</td>
-<td style="text-align:right;">
-3.49
-</td>
-<td style="text-align:right;">
-0.0048
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-quadrat = line_intercept
-</td>
-<td style="text-align:right;">
-0.43
-</td>
-<td style="text-align:right;">
-1.0000
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-quadrat = point_quadrat
-</td>
-<td style="text-align:right;">
-3.63
-</td>
-<td style="text-align:right;">
-0.0028
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-quadrat = dronT
-</td>
-<td style="text-align:right;">
-2.02
-</td>
-<td style="text-align:right;">
-0.4370
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-dronQ = line_intercept
-</td>
-<td style="text-align:right;">
-2.08
-</td>
-<td style="text-align:right;">
-0.3796
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-dronQ = point_quadrat
-</td>
-<td style="text-align:right;">
-5.28
-</td>
-<td style="text-align:right;">
-0.0000
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-dronQ = dronT
-</td>
-<td style="text-align:right;">
-0.37
-</td>
-<td style="text-align:right;">
-1.0000
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 line_intercept = point_quadrat
 </td>
 <td style="text-align:right;">
-2.40
+4.56
 </td>
-<td style="text-align:right;">
-0.1633
+<td style="text-align:left;">
+&lt;0.001
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-line_intercept = dronT
+line_intercept = quadrat medio
 </td>
 <td style="text-align:right;">
-1.84
+0.80
 </td>
-<td style="text-align:right;">
-0.6648
+<td style="text-align:left;">
+&gt;0.999
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-point_quadrat = dronT
+line_intercept = quadrat media ponderada
 </td>
 <td style="text-align:right;">
-4.24
+0.29
+</td>
+<td style="text-align:left;">
+&gt;0.999
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+point_quadrat = quadrat medio
 </td>
 <td style="text-align:right;">
-0.0002
+3.76
+</td>
+<td style="text-align:left;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+point_quadrat = quadrat media ponderada
+</td>
+<td style="text-align:right;">
+4.27
+</td>
+<td style="text-align:left;">
+&lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+quadrat medio = quadrat media ponderada
+</td>
+<td style="text-align:right;">
+0.51
+</td>
+<td style="text-align:left;">
+&gt;0.999
 </td>
 </tr>
 </tbody>
 </table>
-<p><img src="figure/compara_methods.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Observamos que no hay diferencias entre LI, y los quadrats medios, ni quadrats ponderado.</p>
+<div id="correlaciones" class="section level3">
+<h3>Correlaciones</h3>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="pq-liqmqmp" class="section level4">
+<h4>PQ ~ LI,Qm,Qmp</h4>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="li-pqqmqmp" class="section level4">
+<h4>LI ~ PQ,Qm,Qmp</h4>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
-Past versions of unnamed-chunk-8-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
+Past versions of unnamed-chunk-22-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div id="fig-unnamed-chunk-22-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1006,7 +1075,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/serpam/veg_alcontar/blob/b4ebf2ee9bbfc067a963eef89032cafec01dadae/docs/figure/compara_methods.Rmd/unnamed-chunk-8-1.png" target="_blank">b4ebf2e</a>
+<a href="https://github.com/serpam/veg_alcontar/blob/a3d3eb4f78eb3a222e3e3aff75da17a56eb183e7/docs/figure/compara_methods.Rmd/unnamed-chunk-22-1.png" target="_blank">a3d3eb4</a>
 </td>
 <td>
 ajpelu
@@ -1017,6 +1086,16 @@ ajpelu
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+</div>
+<div id="qm-pqli" class="section level4">
+<h4>Qm ~ PQ,LI</h4>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="qmp-pqli" class="section level4">
+<h4>Qmp ~ PQ,LI</h4>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 </div>
@@ -1317,7 +1396,7 @@ dronT
 </tr>
 </tbody>
 </table>
-<div id="modelo-1" class="section level2">
+<div id="modelo" class="section level2">
 <h2>Modelo</h2>
 <ul>
 <li>Aplicamos un modelo de Kruskal-Wallis con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni).</li>
@@ -1452,7 +1531,7 @@ line_intercept = dronT
 </tr>
 </tbody>
 </table>
-<p><img src="figure/compara_methods.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="coeficiente-de-variación-1" class="section level2">
 <h2>Coeficiente de Variación</h2>
@@ -1718,7 +1797,7 @@ quadrat_parcela
 </tr>
 </tbody>
 </table>
-<div id="modelo-2" class="section level2">
+<div id="modelo-1" class="section level2">
 <h2>Modelo</h2>
 <ul>
 <li>Aplicamos un modelo de Kruskal-Wallis con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni).</li>
@@ -1897,7 +1976,7 @@ point_quadrat_extenso = quadrat_parcela
 </tr>
 </tbody>
 </table>
-<p><img src="figure/compara_methods.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="coeficiente-de-variación-2" class="section level2">
 <h2>Coeficiente de Variación</h2>
@@ -2173,7 +2252,7 @@ point_quadrat
 </tr>
 </tbody>
 </table>
-<div id="modelo-3" class="section level2">
+<div id="modelo-2" class="section level2">
 <h2>Modelo</h2>
 <ul>
 <li>Aplicamos un modelo de ANOVA con comparaciones post-hoc aplicando test de Dunn (correcciones de Bonferroni).</li>
@@ -2366,7 +2445,7 @@ line_intercept - point_quadrat
 </tr>
 </tbody>
 </table>
-<p><img src="figure/compara_methods.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/compara_methods.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="coeficiente-de-variación-3" class="section level2">
 <h2>Coeficiente de Variación</h2>
@@ -2458,13 +2537,14 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] multcompView_0.1-8 PMCMRplus_1.9.3    PMCMR_4.3          statmod_1.4.36    
- [5] tweedie_2.3.3      report_0.3.0       kableExtra_1.3.1   cvequality_0.2.0  
- [9] performance_0.8.0  ggdist_3.0.1       Metrics_0.1.4      ggstatsplot_0.7.2 
-[13] colorspace_2.0-2   ggforce_0.3.2      ggdark_0.2.1       janitor_2.1.0     
-[17] here_1.0.1         forcats_0.5.1      stringr_1.4.0      dplyr_1.0.6       
-[21] purrr_0.3.4        readr_1.4.0        tidyr_1.1.3        tibble_3.1.2      
-[25] ggplot2_3.3.5      tidyverse_1.3.1    workflowr_1.7.0   
+ [1] corrplot_0.92      multcompView_0.1-8 ggtext_0.1.1       PMCMRplus_1.9.3   
+ [5] PMCMR_4.3          statmod_1.4.36     tweedie_2.3.3      report_0.3.0      
+ [9] kableExtra_1.3.1   cvequality_0.2.0   performance_0.8.0  ggdist_3.0.1      
+[13] Metrics_0.1.4      ggstatsplot_0.7.2  colorspace_2.0-2   ggpubr_0.4.0      
+[17] ggforce_0.3.2      ggdark_0.2.1       janitor_2.1.0      here_1.0.1        
+[21] forcats_0.5.1      stringr_1.4.0      dplyr_1.0.6        purrr_0.3.4       
+[25] readr_1.4.0        tidyr_1.1.3        tibble_3.1.2       ggplot2_3.3.5     
+[29] tidyverse_1.3.1    workflowr_1.7.0   
 
 loaded via a namespace (and not attached):
   [1] readxl_1.3.1              pairwiseComparisons_3.1.3
@@ -2475,59 +2555,66 @@ loaded via a namespace (and not attached):
  [11] digest_0.6.27             SuppDists_1.1-9.5        
  [13] htmltools_0.5.2           fansi_0.4.2              
  [15] magrittr_2.0.1            memoise_2.0.0            
- [17] paletteer_1.3.0           modelr_0.1.8             
- [19] sandwich_3.0-0            rvest_1.0.0              
- [21] ggrepel_0.9.1             textshaping_0.3.2        
- [23] haven_2.3.1               xfun_0.23                
- [25] prismatic_1.0.0           callr_3.7.0              
- [27] crayon_1.4.1              jsonlite_1.7.2           
- [29] zeallot_0.1.0             survival_3.2-7           
- [31] zoo_1.8-8                 glue_1.4.2               
- [33] polyclip_1.10-0           gtable_0.3.0             
- [35] emmeans_1.5.4             webshot_0.5.2            
- [37] MatrixModels_0.4-1        statsExpressions_1.1.0   
- [39] distributional_0.3.0      Rmpfr_0.8-2              
- [41] scales_1.1.1.9000         mvtnorm_1.1-1            
- [43] DBI_1.1.1                 Rcpp_1.0.7               
- [45] viridisLite_0.4.0         xtable_1.8-4             
- [47] httr_1.4.2                ellipsis_0.3.2           
- [49] pkgconfig_2.0.3           reshape_0.8.8            
- [51] farver_2.1.0              sass_0.3.1               
- [53] dbplyr_2.1.1              utf8_1.1.4               
- [55] labeling_0.4.2            tidyselect_1.1.1         
- [57] rlang_0.4.12              later_1.1.0.1            
- [59] ggcorrplot_0.1.3          effectsize_0.4.5         
- [61] munsell_0.5.0             cellranger_1.1.0         
- [63] tools_4.0.2               cachem_1.0.4             
- [65] cli_2.5.0                 generics_0.1.0           
- [67] broom_0.7.9               evaluate_0.14            
- [69] fastmap_1.1.0             ragg_1.1.1               
- [71] BWStest_0.2.2             yaml_2.2.1               
- [73] rematch2_2.1.2            processx_3.5.1           
- [75] knitr_1.31                fs_1.5.0                 
- [77] WRS2_1.1-1                pbapply_1.4-3            
- [79] whisker_0.4               xml2_1.3.2               
- [81] correlation_0.6.1         compiler_4.0.2           
- [83] rstudioapi_0.13           ggsignif_0.6.0           
- [85] reprex_2.0.0              tweenr_1.0.1             
- [87] bslib_0.2.4               stringi_1.7.4            
- [89] highr_0.8                 ps_1.5.0                 
- [91] parameters_0.14.0         lattice_0.20-41          
- [93] Matrix_1.3-2              vctrs_0.3.8              
- [95] pillar_1.6.1              lifecycle_1.0.1          
- [97] mc2d_0.1-18               jquerylib_0.1.3          
- [99] estimability_1.3          insight_0.14.4           
-[101] httpuv_1.5.5              patchwork_1.1.1          
-[103] R6_2.5.1                  promises_1.2.0.1         
-[105] BayesFactor_0.9.12-4.2    codetools_0.2-18         
-[107] MASS_7.3-53               gtools_3.8.2             
-[109] assertthat_0.2.1          rprojroot_2.0.2          
-[111] withr_2.4.1               multcomp_1.4-16          
-[113] bayestestR_0.9.0          parallel_4.0.2           
-[115] hms_1.0.0                 grid_4.0.2               
-[117] coda_0.19-4               rmarkdown_2.8            
-[119] snakecase_0.11.0          git2r_0.28.0             
-[121] getPass_0.2-2             lubridate_1.7.10         </code></pre>
+ [17] paletteer_1.3.0           openxlsx_4.2.3           
+ [19] modelr_0.1.8              sandwich_3.0-0           
+ [21] rvest_1.0.0               ggrepel_0.9.1            
+ [23] textshaping_0.3.2         haven_2.3.1              
+ [25] xfun_0.23                 prismatic_1.0.0          
+ [27] callr_3.7.0               crayon_1.4.1             
+ [29] jsonlite_1.7.2            zeallot_0.1.0            
+ [31] survival_3.2-7            zoo_1.8-8                
+ [33] glue_1.4.2                polyclip_1.10-0          
+ [35] gtable_0.3.0              emmeans_1.5.4            
+ [37] webshot_0.5.2             MatrixModels_0.4-1       
+ [39] distributional_0.3.0      statsExpressions_1.1.0   
+ [41] car_3.0-10                Rmpfr_0.8-2              
+ [43] abind_1.4-5               scales_1.1.1.9000        
+ [45] mvtnorm_1.1-1             DBI_1.1.1                
+ [47] rstatix_0.6.0             Rcpp_1.0.7               
+ [49] gridtext_0.1.4            viridisLite_0.4.0        
+ [51] xtable_1.8-4              foreign_0.8-81           
+ [53] httr_1.4.2                ellipsis_0.3.2           
+ [55] pkgconfig_2.0.3           reshape_0.8.8            
+ [57] farver_2.1.0              sass_0.3.1               
+ [59] dbplyr_2.1.1              utf8_1.1.4               
+ [61] labeling_0.4.2            effectsize_0.4.5         
+ [63] tidyselect_1.1.1          rlang_0.4.12             
+ [65] later_1.1.0.1             ggcorrplot_0.1.3         
+ [67] munsell_0.5.0             cellranger_1.1.0         
+ [69] tools_4.0.2               cachem_1.0.4             
+ [71] cli_2.5.0                 generics_0.1.0           
+ [73] broom_0.7.9               evaluate_0.14            
+ [75] fastmap_1.1.0             ragg_1.1.1               
+ [77] BWStest_0.2.2             yaml_2.2.1               
+ [79] rematch2_2.1.2            processx_3.5.1           
+ [81] knitr_1.31                fs_1.5.0                 
+ [83] zip_2.1.1                 nlme_3.1-152             
+ [85] WRS2_1.1-1                pbapply_1.4-3            
+ [87] whisker_0.4               xml2_1.3.2               
+ [89] correlation_0.6.1         compiler_4.0.2           
+ [91] rstudioapi_0.13           curl_4.3                 
+ [93] ggsignif_0.6.0            reprex_2.0.0             
+ [95] tweenr_1.0.1              bslib_0.2.4              
+ [97] stringi_1.7.4             highr_0.8                
+ [99] ps_1.5.0                  parameters_0.14.0        
+[101] lattice_0.20-41           Matrix_1.3-2             
+[103] vctrs_0.3.8               pillar_1.6.1             
+[105] lifecycle_1.0.1           mc2d_0.1-18              
+[107] jquerylib_0.1.3           estimability_1.3         
+[109] data.table_1.14.0         insight_0.14.4           
+[111] patchwork_1.1.1           httpuv_1.5.5             
+[113] R6_2.5.1                  promises_1.2.0.1         
+[115] rio_0.5.16                BayesFactor_0.9.12-4.2   
+[117] codetools_0.2-18          MASS_7.3-53              
+[119] gtools_3.8.2              assertthat_0.2.1         
+[121] rprojroot_2.0.2           withr_2.4.1              
+[123] multcomp_1.4-16           mgcv_1.8-33              
+[125] bayestestR_0.9.0          parallel_4.0.2           
+[127] hms_1.0.0                 grid_4.0.2               
+[129] coda_0.19-4               rmarkdown_2.8            
+[131] snakecase_0.11.0          carData_3.0-4            
+[133] git2r_0.28.0              getPass_0.2-2            
+[135] lubridate_1.7.10         </code></pre>
 </div>
 </div>
 </div>
