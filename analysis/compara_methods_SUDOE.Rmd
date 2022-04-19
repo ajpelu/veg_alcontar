@@ -1,0 +1,447 @@
+---
+title: "Compara métodos de campo y dron (paper SUDOE)"
+author: "ajpelu"
+date: "2022-04-18"
+output: 
+  bookdown::html_document2:
+    base_format: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(ggdark)
+library(ggforce)
+library(ggpubr)
+library(colorspace)
+library(ggstatsplot)
+library(Metrics)
+library(ggdist)
+library(performance)
+library(cvequality)
+library(kableExtra)
+library(report)
+library(tweedie)
+library(statmod)
+library(PMCMR)
+library(PMCMRplus)
+library(ggtext)
+library(pairwiseComparisons)
+library(ggstatsplot)
+library(ggsignif)
+library(statsExpressions)
+
+# Notas sobre anova
+# https://bcdudek.net/anova/index.html
+# http://www.alexanderdemos.org/ANOVA6.html
+```
+
+
+```{r read-data}
+fit_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "fitovolumen_transectos") %>% janitor::clean_names() 
+
+fit_q <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "fitovolumen_quadrat") %>% janitor::clean_names() 
+
+cob_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "cobertura_transectos") %>% janitor::clean_names() 
+
+cob_q <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "cobertura_quadrat") %>% janitor::clean_names() 
+
+riq_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "riqueza_transectos") %>% janitor::clean_names()
+
+div_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "diversidad_transectos") %>% janitor::clean_names()
+
+riqdiv_q <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
+                              sheet = "riqueza_div_quadrat") %>% janitor::clean_names()
+```
+
+```{r}
+cob_qlonger <- cob_q %>% dplyr::select(zona, parcela, quadrat = plot, dronQ = dron) %>% 
+  pivot_longer(cols = c("dronQ", "quadrat"))
+
+cob_tlonger <- cob_t %>% 
+  dplyr::select(-transecto) %>% 
+  rename(dronT = dron) %>% 
+  pivot_longer(cols = c("dronT", "line_intercept","point_quadrat"))
+
+cober <- bind_rows(cob_qlonger, cob_tlonger) %>% 
+  mutate(metodo = fct_relevel(name, c("quadrat","dronQ","line_intercept","point_quadrat", "dronT"))) %>% 
+  mutate(variable = "Cobertura")
+
+fit_qlonger <- fit_q %>% dplyr::select(zona, parcela, quadrat = plot, dronQ = dron) %>% 
+  pivot_longer(cols = c("dronQ", "quadrat"))
+
+fit_tlonger <- fit_t %>% 
+  dplyr::select(-transecto, -fecha_muestreos) %>% 
+  rename(line_intercept = line_interc) %>% 
+  rename(dronT = dron) %>% 
+  pivot_longer(cols = c("dronT", "line_intercept"))
+
+fit <- bind_rows(fit_qlonger, fit_tlonger) %>% 
+  mutate(metodo = fct_relevel(name, c("quadrat","dronQ","line_intercept", "dronT"))) %>% 
+  mutate(variable = "Fitovolumen")
+
+riqdiv_q_longer <- riqdiv_q %>% dplyr::select(zona = nombre_zona, 
+                                              parcela = geo_parcela_nombre, 
+                                              quadrat_riqueza,
+                                              quadrat_diversidad) %>% 
+  pivot_longer(cols = c("quadrat_riqueza","quadrat_diversidad")) %>% 
+  separate(name, into=c("metodo", "variable"), sep="_", remove = FALSE)
+
+
+riq_tlonger <- riq_t %>% 
+  pivot_longer(cols = c("line_intercept","point_quadrat","point_quadrat_extenso","quadrat_parcela")) %>% 
+  mutate(variable = "riqueza", metodo = name)
+
+div_tlonger <- div_t %>% 
+  pivot_longer(cols = c("line_intercept","point_quadrat")) %>% 
+  mutate(variable = "diversidad", metodo = name)
+
+d <- bind_rows(cober, fit, riqdiv_q_longer, riq_tlonger, div_tlonger)
+
+```
+
+```{r}
+# Auxiliar functions 
+comparaKW <- function(df, mivariable, group_variable, alpha_posthoc){ 
+  require(PMCMRplus)
+  require(multcompView) 
+  
+  output <- list() 
+  
+  # Model formulation
+  myformula <- as.formula(paste0(mivariable, " ~ " , group_variable))
+  
+  # Kruskal Wallis  
+  kt <- kruskal.test(myformula, data = df) 
+  
+  # Summary AOV (broom style)
+  tm <- broom::tidy(kt)
+  tm$mi_variable <- mivariable
+  
+  # Dunn's test 
+  # object <- PMCMR::posthoc.kruskal.dunn.test(myformula, data=df, p.adjust.method = "bonferroni")
+  object <- PMCMRplus::kwAllPairsDunnTest(myformula, data=df, p.adjust.method = "bonferroni")
+  
+  # Get dataframe with letters and pvalues (#from summary.PMCMR)
+  pval <- as.numeric(object$p.value)
+  stat <- as.numeric(object$statistic)
+  grp1 <- as.numeric(c(col(object$p.value)))
+  cnam <- colnames(object$p.value)
+  grp2 <- as.numeric(c(row(object$p.value)))
+  rnam <- rownames(object$p.value)
+  H0 <- paste(cnam[grp1], " = ", rnam[grp2])
+  OK <- !is.na(pval)
+  xdf <- data.frame(H0 = H0[OK], statistic = stat[OK], p.value = as.numeric(format.pval(pval[OK], 5)))
+  
+  # Get letters (using multcompView) See viggnete PMCMR 
+  dt_letters  <- multcompView::multcompLetters(PMCMR::get.pvalues(object), threshold = alpha_posthoc)
+ 
+  output$KW <- tm
+  output$post_hoc <- xdf
+  output$letters <- dt_letters
+  return(output)
+}
+
+
+format_letters <- function(kw, group_variable){
+  l <- as.data.frame(kw$letters$Letters)
+  l$v <- row.names(l)
+  colnames(l) <- c('letter', group_variable)
+  row.names(l) <- NULL
+  return(l)
+}
+
+comparaCV <- function(x, group_variable) {
+  # function to compute pairwise comparisons of CV equality test 
+  # see cvequality to perform a CV equality test between samples
+  # here I created a function to compute test of CV equality among each
+  # pairwise of the group_variable
+  # march 2022 
+  
+  require(cvequality)
+  require(dplyr)
+  
+  set.seed(123)
+  # Genera combinations of the grouping variable
+  ## vector of combinations
+  v <- x[group_variable] %>% pull()
+  combinaciones <- combn(v, 2, simplify = FALSE)
+  
+  # Out dataframe 
+  cv_df <- c()
+  
+  for (i in 1:length(combinaciones)){
+    out <- t(as.matrix(combinaciones[[i]], nrow=1)) %>% as.data.frame()
+    df <- x %>% filter(.data[[group_variable]] %in% combinaciones[[i]]) 
+    test_cv <- cvequality::mslr_test2(nr=9999, n=df$n, s=df$sd, x=df$mean, seed=123)
+    
+    out$MSLRT <- test_cv$MSLRT
+    out$p_value <- as.numeric(format(test_cv$p_value, scientific = FALSE))
+    
+    cv_df <- rbind(cv_df, out)
+  }
+  return(cv_df)
+  
+}
+
+
+```
+
+
+# Objetivo 1. Carga de combustible: cobertura y fitovolumen 
+
+## Cobetura 
+
+Vamos a realizar la comparación seleccionando para cada parcela (n=12) un valor de cobertura de quadrats (quadrats medio). 
+
+```{r}
+# ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
+cob <- d %>% filter(variable == "Cobertura") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","dronQ","line_intercept","point_quadrat", "dronT"))) 
+```
+
+
+```{r}
+cob_qcorrected <- readxl::read_excel(here::here("data/Cobertura_fitovolumen_corregido_parcela.xlsx")) %>% janitor::clean_names() %>% 
+  dplyr::select(parcela, value=cobertura_cor) %>% 
+  mutate(metodo = "quadrat media ponderada")
+```
+
+```{r}
+cob_doce <- 
+  cob %>% 
+ filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+  dplyr::select(parcela, value, metodo) %>% 
+  bind_rows((
+    cob_q %>% 
+  group_by(parcela) %>% 
+  summarize(value = mean(plot)) %>% 
+  mutate(metodo = "quadrat medio"))) %>% 
+    bind_rows(cob_qcorrected)
+  
+```
+
+
+### Summary values 
+```{r cob-resumen}
+scob <- cob_doce %>% 
+  filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+scob %>% kable(digits = 2,
+               caption = "Cobertura || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+- ANOVA Kruskal Wallis 
+
+```{r cob-kw}
+kw_cob_doce <- cob_doce %>% 
+    filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% mutate(metodo = fct_relevel(metodo, 
+                              c("line_intercept",
+                                "point_quadrat", 
+                                "quadrat medio"))) %>% 
+  rename(cobertura = value) %>% 
+  comparaKW('cobertura', 'metodo', alpha_posthoc = 0.05)
+
+kw_cob_doce$KW %>% kbl(caption = "Cobertura || Non-parametric Kruskal-Wallis ANOVA") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+Los resultados de la ANOVA no paramétrica (Kruskal-Wallis) indican que existen diferencias significativas para la cobertura (%) entre los diferentes métodos de campo empleados ($\chi^2$ = `r paste0(round(kw_cob_doce$KW$statistic,2),"; ", scales::pvalue(kw_cob_doce$KW$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) (Tabla \@ref(tab:cob-kw)).
+
+
+Posteriormente, evaluamos si existen diferencias entre cada uno de los métodos (*post hoc*) y observamos que existen diferencias significativas entre el **point quadrat** y los otros métodos (**line intercept** y **quadrat medio**) (Tabla \@ref(tab:cob-ph), Figura \@ref(fig:cob-violin)). Asimismo, no observamos diferencias entre la cobertura estimada según el line intercept y el quadrat medio. 
+
+```{r cob-ph}
+kw_cob_doce$post_hoc %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kable(digits = c(0,2,4), caption = "Cobertura || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+```{r cob-violin, fig.cap="Comparación de los valores de cobertura entre los diferentes métodos de campo."}
+
+p <- cob_doce %>% 
+  filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio"))
+
+set.seed(123)
+ggbetweenstats(p, 
+               x = metodo, 
+               y= value, 
+               type = "np",
+               ylab = "Cobertura (%)", 
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s", 
+               centrality.label.args = list(size = 3, nudge_x = -0.4)) 
+
+```
+
+### Correlación 
+El siguiente paso es evaluar la correlación que existe entre los métodos de campo para la cobertura. 
+
+```{r}
+correla_pares <- function(df, vselected, xlab, ylab){ 
+  
+  dftemp <- df %>% 
+    pivot_wider(names_from = metodo) %>% 
+    pivot_longer(cols = -c(vselected, parcela))
+
+  ggscatter(dftemp, x = "value", 
+          y = vselected, 
+          add = "reg.line", conf.int = TRUE, 
+          color = "name", shape = "name",
+          xlab = xlab,
+          ylab = ylab) +  
+  geom_abline(slope = 1) + 
+  stat_cor(
+    label.y.npc="top", label.x.npc = "left",
+    aes(color = name, 
+        label = paste(..rr.label.., ..p.label.., sep = "~`,`~"), 
+        ),
+    show.legend = FALSE
+    )  
+  
+  }
+```
+
+Tal y como observamos en la Figura \@ref(fig:cob-correla), existe una correlación significativa del **line intercept** con el **point quadrat** ($R^2=$ 0.63), aunque lejos del ajuste perfecto (línea negra en Figura \@ref(fig:cob-correla)). El método **point quadrat** sobreestima los valores de cobertura con respecto al método de **line intercept**. Así, el rango de cobertura estimado por el LI varía entre 11.95-34 %, mientras que la estimación por PQ varía entre 41-64% (Tabla \@ref(tab:cob-resumen)). 
+
+```{r cob-correla, fig.cap="Correlación entre los valores de cobertura estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat medio. "}
+cob_doce %>% 
+  filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% 
+  correla_pares("line_intercept", 
+                xlab = "Cobertura (%)", 
+                ylab = "Cobertura (%) Line Intercept") +
+  xlim(0,80) + ylim(0,80)+ 
+  scale_shape_manual(values = c(15,19), name = "") +
+  scale_colour_manual(values = c("black","red"), name = "") + 
+  scale_fill_manual(values = c("black","red"), name = "") 
+
+```
+
+## Fitovolumen
+
+- En este caso solo compararemos los métodos de Line Intercept y Quadrat medio 
+```{r}
+# ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
+fit <- d %>% filter(variable == "Fitovolumen") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","dronQ","line_intercept","dronT"))) 
+```
+
+
+```{r}
+fit_doce <- 
+  fit %>% 
+ filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+  dplyr::select(parcela, value, metodo) %>% 
+  bind_rows((
+    fit_q %>% 
+  group_by(parcela) %>% 
+  summarize(value = mean(plot)) %>% 
+  mutate(metodo = "quadrat medio")))
+  
+```
+
+### Summary values 
+```{r fit-resumen}
+scob <- fit_doce %>% 
+  filter(metodo %in% c("line_intercept","quadrat medio")) %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+scob %>% kable(digits = 2,
+               caption = "Fitovolumen || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+```{r}
+fit_selected <- fit_doce %>% filter(metodo %in% c("line_intercept","quadrat medio")) 
+```
+
+
+```{r}
+# normalidad
+s <- shapiro.test(fit_selected$value)
+
+# homocedasticidad
+b <- bartlett.test(fit_selected$value, fit_selected$metodo, data=fit_selected)
+```
+
+Hemos comprobado Normalidad (`r paste0("W = ",round(s$statistic,2),  "; ",  scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`);  y homocedasticidad (`r paste0("Bartlett's K-squared = ", round(b$statistic, 2),"; ", scales::pvalue(b$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) y se puede aplicar un método paramétrico, en este caso, la t-student de comparación de medias. Observamos que existen diferencias (Figura \@ref(fig:fit-violin)): 
+
+```{r }
+fit_t <- t.test(value ~ metodo, data = fit_selected)
+```
+
+
+```{r}
+report(fit_t)
+```
+
+
+```{r fit-violin, fig.cap="Comparación de los valores de fitovolumen entre Line Intercept y Quadrat medio."}
+
+set.seed(123)
+ggbetweenstats(fit_selected, 
+               x = metodo, 
+               y= value, 
+               type = "p",
+               ylab=expression(Fitovolumen~(m^3~ha^{-1}))) 
+```
+
+### Correlación 
+No existe una buena correlación entre los valores de fitovolumen estimados con **line intercept** y los estimados con **quadrat medio** (Figura \@ref(fig:fit-correla)). Este último método sobreestima el fitovolumen registrado por el LI (ver Tabla \@ref(tab:fit-resumen)). 
+
+```{r fit-correla, fig.cap="Correlación entre los valores de fitovolumen estimados por Line Intercept y Quadrat medio."}
+
+fit_selected %>% 
+  correla_pares("line_intercept", 
+                ylab = expression(Fitovolumen~Line~Intercept~(m^3~ha^{-1})), 
+                xlab = expression(Fitovolumen~Quadrat~medio~(m^3~ha^{-1}))) +
+  xlim(0,1500) + ylim(0,1500) + 
+  theme(legend.position = "none") + 
+  scale_shape_manual(values = 19, name = "") +
+  scale_colour_manual(values = "black", name = "") + 
+  scale_fill_manual(values = "black", name = "") 
+```
+
