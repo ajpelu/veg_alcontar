@@ -445,3 +445,219 @@ fit_selected %>%
   scale_fill_manual(values = "black", name = "") 
 ```
 
+
+# Objetivo 2. Diversidad y Riqueza
+
+## Riqueza
+
+Comparamos entre line intercept, quadrat parcela y point quadrat. 
+
+```{r}
+# ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
+riq <- d %>% filter(variable == "riqueza") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","line_intercept","point_quadrat","point_quadrat_extenso","quadrat_parcela"))) 
+
+riq_selected <- riq %>% filter(metodo %in% c("line_intercept","point_quadrat","quadrat_parcela")) 
+```
+
+
+### Summary values 
+```{r riq-resumen}
+sriq <- riq_selected  %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+sriq %>% kable(digits = 2,
+               caption = "Riqueza || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+```{r, eval=FALSE}
+aov_riq <- aov(value~metodo, riq_selected)
+check_homogeneity(aov_riq)
+check_normality(aov_riq)
+```
+
+- ANOVA Kruskal Wallis 
+
+```{r riq-kw}
+kw_riq <- riq_selected %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("line_intercept",
+                                "point_quadrat", 
+                                "quadrat_parcela"))) %>% 
+  rename(riqueza = value) %>% 
+  comparaKW('riqueza', 'metodo', alpha_posthoc = 0.05)
+
+kw_riq$KW %>% kbl(caption = "Riqueza || Non-parametric Kruskal-Wallis ANOVA") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+Los resultados de la ANOVA no paramétrica (Kruskal-Wallis) indican que existen diferencias significativas para la riqueza de especies vegetales entre los diferentes métodos de campo empleados ($\chi^2$ = `r paste0(round(kw_riq$KW$statistic,2),"; ", scales::pvalue(kw_riq$KW$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) (Tabla \@ref(tab:riq-kw)).
+
+
+Posteriormente, evaluamos si existen diferencias entre cada uno de los métodos (*post hoc*) y observamos que existen diferencias significativas entre el **quadrat parcela** y los otros métodos (**line intercept** y **point quadrat**) (Tabla \@ref(tab:riq-ph), Figura \@ref(fig:riq-violin)). Asimismo, no observamos diferencias entre la riqueza estimada según el line intercept y el point quadrat. 
+
+```{r riq-ph}
+kw_riq$post_hoc %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kable(digits = c(0,2,4), caption = "Riqueza || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+
+```{r riq-violin, fig.cap="Comparación de los valores de riqueza entre los diferentes métodos de campo."}
+
+set.seed(123)
+ggbetweenstats(riq_selected, 
+               x = metodo, 
+               y= value, 
+               type = "p",
+               ylab = "Riqueza (%)", 
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s")
+
+```
+
+### Correlación 
+
+Tal y como observamos en la Figura \@ref(fig:riq-correla), los métodos de **line intercept** y **point quadrat**, subestiman la riqueza estimada por el método **quadrat parcela**.  
+
+```{r riq-correla, fig.cap="Correlación entre los valores de riqueza estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat Parcela"}
+
+riq_selected %>% 
+  dplyr::select(parcela, value, metodo) %>% 
+  correla_pares("quadrat_parcela", 
+                xlab = "Riqueza", 
+                ylab = "Riqueza Quadrat Parcela") + 
+  xlim(0,60) + ylim(0,60) + 
+  scale_shape_manual(values = c(15,19), name = "") +
+  scale_colour_manual(values = c("black","red"), name = "") + 
+  scale_fill_manual(values = c("black","red"), name = "") 
+
+```
+
+
+## Diversidad
+
+Comparamos entre line intercept, quadrat medio y point quadrat.
+
+```{r}
+# ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
+div <- d %>% filter(variable == "diversidad") %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("quadrat","line_intercept","point_quadrat"))) 
+
+div_selected <- 
+  div %>% dplyr::select(parcela, value, metodo) %>% 
+  filter(metodo != "quadrat") %>% 
+  bind_rows(
+    div %>% dplyr::select(parcela, value, metodo) %>% 
+      filter(metodo == "quadrat") %>% 
+      group_by(parcela) %>% 
+      summarise(value = mean(value)) %>% 
+      mutate(metodo = "quadrat medio")
+  ) %>% 
+  mutate(value = abs(value))
+  
+```
+
+
+### Summary values 
+```{r div-resumen}
+sdiv <- div_selected  %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+sdiv %>% kable(digits = 2,
+               caption = "Diversidad (Shannon Index) || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+```{r, eval=FALSE}
+aov_div <- aov(value~metodo, div_selected)
+check_homogeneity(aov_div)
+check_normality(aov_div)
+```
+
+- ANOVA Kruskal Wallis 
+
+```{r div-kw}
+kw_div <- div_selected %>% 
+  mutate(metodo = fct_relevel(metodo, 
+                              c("line_intercept",
+                                "point_quadrat", 
+                                "quadrat medio"))) %>% 
+  rename(diversidad = value) %>% 
+  comparaKW('diversidad', 'metodo', alpha_posthoc = 0.05)
+
+kw_div$KW %>% kbl(caption = "Diversidad || Non-parametric Kruskal-Wallis ANOVA") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+Los resultados de la ANOVA no paramétrica (Kruskal-Wallis) indican que existen diferencias significativas para la riqueza de especies vegetales entre los diferentes métodos de campo empleados ($\chi^2$ = `r paste0(round(kw_div$KW$statistic,2),"; ", scales::pvalue(kw_div$KW$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) (Tabla \@ref(tab:div-kw)).
+
+
+Posteriormente, evaluamos si existen diferencias entre cada uno de los métodos (*post hoc*) y observamos que solamente existen diferencias significativas entre el **point quadrat** y el **quadrat medio** (Tabla \@ref(tab:div-ph), Figura \@ref(fig:div-violin)).  
+
+```{r div-ph}
+kw_div$post_hoc %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kable(digits = c(0,2,4), caption = "Diversidad || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+
+```{r div-violin, fig.cap="Comparación de los valores de diversidad (Shannon) entre los diferentes métodos de campo."}
+
+set.seed(123)
+ggbetweenstats(div_selected, 
+               x = metodo, 
+               y= value, 
+               type = "np",
+               ylab = "Diversidad (índice Shannon)", 
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s")
+
+```
+
+### Correlación 
+
+El método **line intercept** subestima la diversidad en comparación con el método **point quadrat** (Figura \@ref(fig:div-correla)), aunque presentan una significativa y alta correlación ($R^2=$ 0.82); mientras que el LI sobreestima la diversidad en comparación con el método **quadrat medio**. 
+
+
+```{r div-correla, fig.cap="Correlación entre los valores de diversidad estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat Medio"}
+
+div_selected %>% 
+  dplyr::select(parcela, value, metodo) %>% 
+  correla_pares("line_intercept", 
+                xlab = "Diversidad", 
+                ylab = "Diversidad Line Intercept") +
+  xlim(0.5,3) + ylim(0.5,3) + 
+  scale_shape_manual(values = c(15,19), name = "") +
+  scale_colour_manual(values = c("black","red"), name = "") + 
+  scale_fill_manual(values = c("black","red"), name = "") 
+```
