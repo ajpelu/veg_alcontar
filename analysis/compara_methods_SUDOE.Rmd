@@ -40,6 +40,10 @@ library(pairwiseComparisons)
 library(ggstatsplot)
 library(ggsignif)
 library(statsExpressions)
+library(rpart)
+library(party)
+library(ggparty)
+library(partykit)
 
 # Notas sobre anova
 # https://bcdudek.net/anova/index.html
@@ -334,9 +338,9 @@ correla_pares <- function(df, vselected, xlab, ylab){
   }
 ```
 
-Tal y como observamos en la Figura \@ref(fig:cob-correla), existe una correlación significativa del **line intercept** con el **point quadrat** ($R^2=$ 0.63), aunque lejos del ajuste perfecto (línea negra en Figura \@ref(fig:cob-correla)). El método **point quadrat** sobreestima los valores de cobertura con respecto al método de **line intercept**. Así, el rango de cobertura estimado por el LI varía entre 11.95-34 %, mientras que la estimación por PQ varía entre 41-64% (Tabla \@ref(tab:cob-resumen)). 
+Tal y como observamos en la Figura \@ref(fig:cob-correla), existe una correlación significativa del **line intercept** con el **point quadrat** ($R^2=$ 0.63), aunque lejos del ajuste perfecto (línea negra en Figura \@ref(fig:cob-correla)). El método **point quadrat** sobreestima los valores de cobertura con respecto al método de **line intercept**. Así, el rango de cobertura estimado por el LI varía entre 11.95-34 %, mientras que la estimación por PQ varía entre 41-64% (Tabla \@ref(tab:cob-resumen)). La correlación entre **quadrat medio** y **point quadrat** es muy baja (Figura \@ref(fig:cob-correlaQM-PQ)). 
 
-```{r cob-correla, fig.cap="Correlación entre los valores de cobertura estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat medio. "}
+```{r cob-correla, fig.cap="Correlación entre los valores de cobertura estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat medio."}
 cob_doce %>% 
   filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% 
   correla_pares("line_intercept", 
@@ -351,7 +355,7 @@ cob_doce %>%
 
 #### Correlación Quadrat medio - Point Quadrat 
 
-```{r}
+```{r cob-correlaQM-PQ, fig.cap="Correlación entre los valores de cobertura estimados por Quadrat medio y Point Quadrat."}
 cob_doce %>% 
   filter(metodo %in% c("point_quadrat", "quadrat medio")) %>% 
   correla_pares("quadrat medio", 
@@ -549,9 +553,9 @@ ggbetweenstats(riq_selected,
 
 ### Correlación 
 
-Tal y como observamos en la Figura \@ref(fig:riq-correla), los métodos de **line intercept** y **point quadrat**, subestiman la riqueza estimada por el método **quadrat parcela**.  
+Tal y como observamos en la Figura \@ref(fig:riq-correla), los métodos de **line intercept** y **point quadrat**, subestiman la riqueza estimada por el método **quadrat parcela**. Asimismo observamos una buena correlación entre la riqueza estimada por **line intercept** y **point quadrat** (Figura \@ref(fig:riq-correlaLI-PQ)) ($R^2=$ 0.66). 
 
-```{r riq-correla, fig.cap="Correlación entre los valores de riqueza estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat Parcela"}
+```{r riq-correla, fig.cap="Correlación entre los valores de riqueza estimados por Quadrat Parcela y los otros métodos de campo: Line Intercept y Point Quadrat"}
 
 riq_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
@@ -567,7 +571,7 @@ riq_selected %>%
 
 #### Correlación Line Intercept - Point Quadrat 
 
-```{r}
+```{r riq-correlaLI-PQ, fig.cap="Correlación entre los valores de riqueza estimados por Line Intercept y Point Quadrat"}
 riq_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
   filter(metodo %in% c("line_intercept","point_quadrat")) %>%  
@@ -580,7 +584,6 @@ riq_selected %>%
   scale_fill_manual(values = "black", name = "") +
   theme(legend.position = "none")
 ```
-
 
 
 ## Diversidad
@@ -679,7 +682,7 @@ ggbetweenstats(div_selected,
 
 ### Correlación 
 
-El método **line intercept** subestima la diversidad en comparación con el método **point quadrat** (Figura \@ref(fig:div-correla)), aunque presentan una significativa y alta correlación ($R^2=$ 0.82); mientras que el LI sobreestima la diversidad en comparación con el método **quadrat medio**. 
+El método **line intercept** subestima la diversidad en comparación con el método **point quadrat** (Figura \@ref(fig:div-correla)), aunque presentan una significativa y alta correlación ($R^2=$ 0.82); mientras que el LI sobreestima la diversidad en comparación con el método **quadrat medio**. La correlación entre **point quadrat** y **quadrat medio** es baja (Figura \@ref(fig:div-correlaQM-PQ)). 
 
 
 ```{r div-correla, fig.cap="Correlación entre los valores de diversidad estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat Medio"}
@@ -697,7 +700,7 @@ div_selected %>%
 
 #### Correlación Quadrat Medio - Point Quadrat 
 
-```{r}
+```{r div-correlaQM-PQ, fig.cap="Correlación entre los valores de diversidad estimados por Quadrat Medio y Point Quadrat."}
 div_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
   filter(metodo %in% c("quadrat medio","point_quadrat")) %>% 
@@ -710,4 +713,726 @@ div_selected %>%
   scale_fill_manual(values = "black", name = "") +
   theme(legend.position = "none")
 ```
+
+# Objetivo 3. Tecnológico 
+
+## Cobertura dronQ ~ quadrats 
+
+```{r}
+cob_dronq <- cob_qlonger %>% dplyr::select(-zona) %>% 
+  rename(metodo = name)
+
+cob_dronq <- cob_q %>% 
+  dplyr::select(id = quadrat, plot, dronQ = dron) %>% 
+  rename(parcela = id) %>% 
+  rename(quadrat = plot) %>% 
+  pivot_longer(cols = c("dronQ", "quadrat")) %>% 
+  rename(metodo = name)
+```
+
+### Summary values 
+```{r cobdq-resumen}
+scob <- cob_dronq %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+scob %>% kable(digits = 2,
+               caption = "Cobertura || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+```{r}
+# normalidad
+s <- shapiro.test(cob_dronq$value)
+
+# homocedasticidad
+b <- bartlett.test(cob_dronq$value, cob_dronq$metodo, data=cob_dronq)
+
+```
+
+Los datos no son normales (`r paste0("W = ",round(s$statistic,2),  "; ",  scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`); pero si se cumple la  homocedasticidad (`r paste0("Bartlett's K-squared = ", round(b$statistic, 2),"; ", scales::pvalue(b$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`). Aplicamos una comparación no paramétrica (Wilcoxon Test), y observamos que existen diferencias significativas entre los valores de cobertura estimados en los **quadrats** frente a los estimados por el **dronQ** (Tabla \@ref(tab:cobdq-test)). La cobertura estimada por **quadrat** presentan valores de la mediana superiores a los estimados con **dronQ** (Figura \@ref(fig:cobdronq-violin)). 
+
+```{r cobdq-test}
+cob_dronq_w <- wilcox.test(value ~ metodo, data = cob_dronq) 
+
+broom::tidy(cob_dronq_w) %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kbl(caption = "DronQ ~ Quadrat || Wilcoxon Comparison test") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+```{r cobdronq-violin, fig.cap="Comparación de los valores de cobertura entre DronQ y Quadrat."}
+
+set.seed(123)
+ggbetweenstats(cob_dronq, 
+               x = metodo, 
+               y= value, 
+               type = "np",
+               ylab="Cobertura (%)",
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s") 
+```
+
+### Correlación 
+
+```{r}
+cobdronq.rmse <- cob_dronq %>% 
+  pivot_wider(values_from = value, names_from = metodo) %>% 
+  summarise(
+    rmse = round(
+    Metrics::rmse(dronQ, quadrat),4),
+    min = min(quadrat), 
+    max = max(quadrat),
+    rmsen.minmax = rmse / (max(quadrat) - min(quadrat))*100)
+```
+
+Observamos una alta correlación significativa entre los valores de cobertura estimados por **dronQ** y los estimados en campo por los **quadrats** ($R^2=$ 0.82) (\@ref(fig:cobdronq-correla-general), aunque observamos que el **quadrat** sobreestima los valores dados por el **dronQ**. Asimismo observamos un valor de RMSE de `r round(cobdronq.rmse$rmse,2)` (y un valor de RMSE normalizado de `r round(cobdronq.rmse$rmsen.minmax,2)`) (Tabla \@ref(tab:cobdronq-rmse)). 
+
+
+```{r cobdronq-correla-general, fig.cap="Correlación entre los valores de cobertura estimados por dronQ y Quadrat."}
+cob_dronq %>%
+  dplyr::select(parcela, value, metodo) %>% 
+  correla_pares("dronQ", 
+                xlab = expression('Cobertura'['campo']*' (%)'),  
+                ylab = expression('Cobertura'['dron']*' (%)')) + 
+  xlim(0,100) + ylim(0,100) + 
+  scale_shape_manual(values = 19, name = "") +
+  scale_colour_manual(values = "blue", name = "") + 
+  scale_fill_manual(values = "blue", name = "") +
+  theme(legend.position = "none")
+```
+
+```{r cobdronq-rmse}
+cobdronq.rmse %>% kbl(caption = "Cobertura || RMSE",
+                digits = c(2,0,0,2)) %>% 
+  kable_paper("hover", full_width = F)
+```
+
+#### Partición de la varianza 
+
+¿Es la relación entre dronQ-Quadrat uniforme a lo largo de todos los valores de cobertura o existen grupos dentro de esta correlación? Dicho de otro modo, ¿la correlación entre las dos variables es homogénea a lo largo de todos los valores de cobertura?. Para ello aplicamos una técnica de partición de la varianza, y hacemos árboles de clasificación.
+
+```{r}
+dfcob_dronq <- cob_dronq %>% 
+  pivot_wider(values_from = value, names_from = metodo)
+
+ct <- partykit::ctree(dronQ ~ quadrat, data = dfcob_dronq)
+ct
+sctest(ct) 
+```
+
+Los resultados indican Nos indica que existen al menos 5 grupos (Figura \@ref(fig:cobdronq-party5). Sin embargo, podemos estar sobreparametrizando. Para ello evaluamos si existe *overfitting*: 
+
+- Hacer crecer un árbol sobre cierto nivel de complejidad, puede llevarnos a sobreparametrizar el modelo. ¿En que nodo cortamos el árbol? 
+
+- Es preferible tener un modelo más simple que sobreparametrizar el ajuste. Para ello podemos utilizar el ***Complexity parameter (CP)***, que controla el tamaño del árbol de decisión. Si el coste de añadir otro nodo (u otra variable) a partir del nodo actual está por encima del valor del cp, entonces el árbol no continúa creciendo. Mas información [aquí](https://statinfer.com/203-3-10-pruning-a-decision-tree-in-r/). 
+
+
+```{r cobdronq-party5, fig.cap="Relación entre la cobertura estimada con DronQ y con Quadrat. Partición de la varianza (modelo global)"}
+ggparty(ct) + 
+  geom_edge() +
+  geom_edge_label(colour = "grey", size = 4) +
+  geom_node_plot(gglist = list(
+    geom_point(aes(x = quadrat,y = dronQ)),
+    geom_smooth(aes(x = quadrat, y=dronQ), method = lm, se = FALSE),
+    geom_abline(slope = 1, colour = "gray"),
+    theme_bw(base_size = 10),
+    xlab(expression('Cobertura'['quadrat']*' (%)')),
+    ylab(expression('Cobertura'['dronQ']*' (%)')) 
+    ),
+                scales = "fixed", 
+                shared_axis_labels = TRUE,
+                shared_legend = TRUE,
+                legend_separator = TRUE, 
+                id = "terminal") +
+   geom_node_label(aes(col = splitvar),
+                  line_list = list(aes(label = paste("Node", id)),
+                                   aes(label = splitvar),
+                                   aes(label = scales::pvalue(p.value, accuracy = 0.001, 
+                                                              decimal.mark = ".", 
+                                                              add_p = TRUE))), 
+                                                     
+          line_gpar = list(list(size = 8, col = "black", fontface = "bold"),
+                                   list(size = 8),
+                                   list(size = 8)),
+                  ids = "inner") + 
+  geom_node_label(aes(label = paste0("Node ", id, ", (n= ", nodesize, ")")),
+                  fontface = "bold",
+                  ids = "terminal",
+                  size = 2, 
+                  nudge_y = 0.01) +
+  theme(legend.position = "none")
+```
+
+```{r cobdronq-error5}
+set.seed(123)
+ctrpart <- rpart(dronQ ~ quadrat, data = dfcob_dronq)
+printcp(ctrpart) %>% 
+  kbl(caption = "CP Error - Modelo global Cobertura",
+      digits = c(4,0,3,3,4)) %>% 
+  kable_paper("hover", full_width = F)
+
+```
+
+Al explorar este modelo observamos que el error (xerror) (Tabla \@ref(tab:cobdronq-error5)) no se disminuye sustancialmente a partir del 3 item (nsplit = 2) (Figura \@ref(fig:cobdronq-error5plot)). Por tanto volvemos a modelar, usando un cp = 0.22.  
+
+```{r cobdronq-error5plot, fig.cap="Error relativo frente a CP del modelo de partición de la varianza completo de la cobertura"}
+plotcp(ctrpart)
+```
+
+```{r}
+set.seed(123)
+ctrpart2 <- rpart(dronQ ~ quadrat, data = dfcob_dronq, control = 
+               rpart.control(minsplit = 2, cp=0.22))
+
+printcp(ctrpart2) %>% 
+  kbl(caption = "CP Error - Modelo global Cobertura",
+      digits = c(4,0,3,3,4)) %>% 
+  kable_paper("hover", full_width = F)
+
+```
+
+```{r cobdronq-party, fig.cap="Relación entre la cobertura estimada con DronQ y con Quadrat. Partición de la varianza (modelo final)"}
+set.seed(123)
+ct_ok <- partykit::ctree(dronQ ~ quadrat, data = dfcob_dronq,
+                         control = partykit::ctree_control(minsplit= 1,alpha = 0.05, maxdepth = 1))
+
+ggparty(ct_ok) + 
+  geom_edge() +
+  geom_edge_label(colour = "grey", size = 4) + 
+  geom_node_plot(gglist = list(
+    geom_point(aes(x = quadrat,y = dronQ)),
+    geom_smooth(aes(x=quadrat, y=dronQ), method = lm, se = FALSE),
+    geom_abline(slope = 1, colour = "gray"),
+    theme_bw(base_size = 10),
+    xlab(expression('Cobertura'['campo']*' (%)')),
+    ylab(expression('Cobertura'['dron']*' (%)')) 
+    ),
+                scales = "fixed", 
+                shared_axis_labels = TRUE,
+                shared_legend = TRUE,
+                legend_separator = TRUE, 
+                id = "terminal") +
+   geom_node_label(aes(col = splitvar),
+                  line_list = list(aes(label = paste("Node", id)),
+                                   aes(label = splitvar),
+                                   aes(label = scales::pvalue(p.value, accuracy = 0.001, 
+                                                              decimal.mark = ".", 
+                                                              add_p = TRUE))), 
+                                                     
+          line_gpar = list(list(size = 8, col = "black", fontface = "bold"),
+                                   list(size = 8),
+                                   list(size = 8)),
+                  ids = "inner") + 
+  geom_node_label(aes(label = paste0("Node ", id, ", (n= ", nodesize, ")")),
+                  fontface = "bold",
+                  ids = "terminal",
+                  size = 2, 
+                  nudge_y = 0.01) +
+  theme(legend.position = "none")
+```
+
+
+```{r cobdronq-correla-partida, fig.cap="Correlación entre los valores de cobertura estimados por dronQ y Quadrat, considerando dos grupos (Coberturas inferiores (azul) y superiores (negro) a 36 % (en campo)."}
+ff <- dfcob_dronq %>% 
+  mutate(clase = case_when(
+    quadrat <= 36 ~ as.character("cob_low"),
+    TRUE ~ "cob_high"
+  ))
+
+ggscatter(ff, 
+          x = "quadrat", 
+          y = "dronQ",
+          add = "reg.line",
+  conf.int = TRUE, 
+  color = "clase", shape = "clase", 
+  xlab = expression('Cobertura'['campo']*' (%)'), 
+  ylab = expression('Cobertura'['dron']*' (%)')) + 
+  xlim(0,100) + ylim(0,100) + 
+  stat_cor(
+    label.y.npc="top", label.x.npc = "left",
+    aes(color = clase, 
+        label = paste(..rr.label.., ..p.label.., sep = "~`,`~")),
+    p.accuracy = 0.001,
+    r.accuracy = 0.001
+    )  + 
+  geom_abline(slope = 1) + 
+  scale_shape_manual(values = c(19,19), name = "") +
+  scale_colour_manual(values = c("black","blue"), name = "") + 
+  scale_fill_manual(values = c("black","blue"), name = "") 
+  
+
+```
+
+```{r cobdronq-rmsegrupos}
+dff.rmse_groups <- ff %>% group_by(clase) %>% 
+  summarise(rmse = round(
+    Metrics::rmse(dronQ, quadrat),4),
+    min = min(quadrat), 
+    max = max(quadrat),
+    rmsen.minmax = rmse / (max(quadrat) - min(quadrat))*100)
+
+dff.rmse_groups %>% 
+  kbl(caption = "Cobertura (por grupos) || RMSE",
+                digits = c(0, 2,0,0,2)) %>% 
+  kable_paper("hover", full_width = F)
+
+```
+
+
+## Cobertura dronT ~ LI y PQ  
+
+```{r}
+cob_p <- cob %>% 
+  filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+  dplyr::select(metodo, value, parcela) 
+```
+
+### Summary values 
+```{r cobdparcela-resumen}
+scobparcela <- cob_p %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+scobparcela %>% kable(digits = 2,
+               caption = "Cobertura dron Parcela || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+- ANOVA Kruskal Wallis 
+
+```{r cobdparcela-kw}
+kw_cobp <- cob_p %>% 
+     filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>%
+  mutate(metodo = fct_relevel(metodo, 
+                              c("line_intercept",
+                                "point_quadrat", 
+                                "dronT"))) %>% 
+  rename(cobertura = value) %>% 
+  comparaKW('cobertura', 'metodo', alpha_posthoc = 0.05)
+
+kw_cobp$KW %>% kbl(caption = "Cobertura Parcela || Non-parametric Kruskal-Wallis ANOVA") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+Los resultados de la ANOVA no paramétrica (Kruskal-Wallis) indican que existen diferencias significativas para la cobertura (%) entre los diferentes métodos de campo empleados ($\chi^2$ = `r paste0(round(kw_cobp$KW$statistic,2),"; ", scales::pvalue(kw_cobp$KW$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) (Tabla \@ref(tab:cobdparcela-kw)).
+
+
+Posteriormente, evaluamos si existen diferencias entre cada uno de los métodos (*post hoc*) y observamos que existen diferencias significativas entre el **point quadrat** y los otros métodos (**line intercept** y **dron Parcela**) (Tabla \@ref(tab:cobdparcela-ph), Figura \@ref(fig:cobdparcela-violin)). Asimismo, no observamos diferencias entre la cobertura estimada según el line intercept y el dron Parcela. 
+
+```{r cobdparcela-ph}
+kw_cobp$post_hoc %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kable(digits = c(0,2,4), caption = "Cobertura Parcela || Non-parametric Kruskal-Wallis ANOVA - Post-hoc Dunn's-test with Bonferroni adjustment") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+
+```{r cobdparcela-violin, fig.cap="Comparación de los valores de cobertura entre los diferentes métodos de campo."}
+set.seed(123)
+ggbetweenstats(cob_p, 
+               x = metodo, 
+               y= value, 
+               type = "np",
+               ylab = "Cobertura (%)", 
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s", 
+               centrality.label.args = list(size = 3, nudge_x = -0.4)) 
+
+```
+
+### Correlación 
+
+Tanto **line intercept** como **point quadrat** subestiman los valores de cobertura dados por el dron en la parcela de 500 m^2 (Figura \@ref(fig:cobdparcela-correla)). Independientemente no presentan buenas correlaciones con el valor de cobertura estimado por el dron para toda la parcela. 
+
+```{r cobdparcela-correla, fig.cap="Correlación entre los valores de cobertura estimados por dronParcela con respecto a Line Intercept y Point Quadrat."}
+cob_p %>% 
+  correla_pares("dronT", 
+                 xlab=expression('Cobertura (%)'),
+                ylab=expression('Cobertura'['dron 500 '*m^2]*' (%)')) + 
+  ylim(c(0,65)) + 
+  xlim(c(0,65)) +
+  scale_shape_manual(values = c(19,15), name = "") +
+  scale_colour_manual(values = c("red","black"), name = "") + 
+  scale_fill_manual(values = c("red","black"), name = "") 
+```
+
+
+
+
+
+
+## Fitovolumen dronQ ~ quadrats 
+
+```{r}
+fit_dronq <- fit_qlonger %>% dplyr::select(-zona) %>% 
+  rename(metodo = name)
+```
+
+### Summary values 
+```{r fitdq-resumen}
+sfit <- fit_dronq %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+sfit %>% kable(digits = 2,
+               caption = "Fitovolumen || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+```{r}
+# normalidad
+s <- shapiro.test(fit_dronq$value)
+
+# homocedasticidad
+b <- bartlett.test(fit_dronq$value, fit_dronq$metodo, data=fit_dronq)
+
+```
+
+Los datos no son normales (`r paste0("W = ",round(s$statistic,2),  "; ",  scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) ni homocedasticos (`r paste0("Bartlett's K-squared = ", round(b$statistic, 2),"; ", scales::pvalue(b$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`). Aplicamos una comparación no paramétrica (Wilcoxon Test), y observamos que existen diferencias significativas entre los valores de fitovolumen estimados en los **quadrats** frente a los estimados por el **dronQ** (Tabla \@ref(tab:fitdq-test)). La cobertura estimada por **quadrat** presentan valores de la mediana superiores a los estimados con **dronQ** (Figura \@ref(fig:fitdronq-violin)). 
+
+```{r fitdq-test}
+fit_dronq_w <- wilcox.test(value ~ metodo, data = fit_dronq) 
+
+broom::tidy(fit_dronq_w) %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kbl(caption = "Fitovolumen DronQ ~ Quadrat || Wilcoxon Comparison test") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+```{r fitdronq-violin, fig.cap="Comparación de los valores de fitovolumen entre DronQ y Quadrat."}
+
+set.seed(123)
+ggbetweenstats(fit_dronq, 
+               x = metodo, 
+               y= value, 
+               type = "np",
+               ylab=expression(Fitovolumen~(m^3~ha^{-1})),
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s") 
+```
+
+### Correlación 
+
+```{r}
+fitdronq.rmse <- fit_q %>% 
+  dplyr::select(id = quadrat, plot, dronQ=dron) %>% 
+  rename(parcela = id, quadrat = plot) %>% 
+  summarise(
+    rmse = round(
+    Metrics::rmse(dronQ, quadrat),4),
+    min = min(quadrat), 
+    max = max(quadrat),
+    rmsen.minmax = rmse / (max(quadrat) - min(quadrat))*100)
+```
+
+Observamos una alta correlación significativa entre los valores de fitovolumen estimados por **dronQ** y los estimados en campo por los **quadrats** ($R^2=$ 0.9) (\@ref(fig:fitdronq-correla-general), aunque observamos que el **quadrat** sobreestima los valores dados por el **dronQ**. Los valores de RMSE son de `r round(fitdronq.rmse$rmse,2)` (y un valor de RMSE normalizado de `r round(fitdronq.rmse$rmsen.minmax,2)`) (Tabla \@ref(tab:fitdronq-rmse)). 
+
+
+```{r fitdronq-correla-general, fig.cap="Correlación entre los valores de fitovolumen estimados por dronQ y Quadrat."}
+
+fit_q %>% dplyr::select(id = quadrat, plot, dronQ=dron) %>%
+  rename(parcela = id, quadrat = plot) %>% 
+  pivot_longer(cols = c("dronQ", "quadrat")) %>% 
+  rename(metodo = name) %>% 
+  correla_pares("dronQ", 
+ ylab=expression(Fitovolumen[dronQ]~(m^3~ha^{-1})),
+ xlab=expression(Fitovolumen[quadrat]~(m^3~ha^{-1}))) +
+  scale_shape_manual(values = 19, name = "") +
+  scale_colour_manual(values = "blue", name = "") + 
+  scale_fill_manual(values = "blue", name = "") +
+  theme(legend.position = "none")
+```
+
+```{r fitdronq-rmse}
+fitdronq.rmse %>% kbl(caption = "Fitovolumen || RMSE",
+                digits = c(2,0,0,2)) %>% 
+  kable_paper("hover", full_width = F)
+```
+
+#### Partición de la varianza 
+
+¿Es la relación entre dronQ-Quadrat uniforme a lo largo de todos los valores de cobertura o existen grupos dentro de esta correlación? Dicho de otro modo, ¿la correlación entre las dos variables es homogénea a lo largo de todos los valores de cobertura?. Para ello aplicamos una técnica de partición de la varianza, y hacemos árboles de clasificación.
+
+```{r}
+dffit_dronq <- fit_q %>% 
+  dplyr::select(id = quadrat, plot, dronQ=dron) %>%
+  rename(parcela = id, quadrat = plot) 
+
+ctfit <- partykit::ctree(dronQ ~ quadrat, data = dffit_dronq)
+ctfit
+sctest(ctfit) 
+```
+
+Los resultados indican Nos indica que existen al menos 4 grupos (Figura \@ref(fig:fitdronq-party4). Sin embargo, podemos estar sobreparametrizando. Para ello evaluamos si existe *overfitting*: 
+
+- Hacer crecer un árbol sobre cierto nivel de complejidad, puede llevarnos a sobreparametrizar el modelo. ¿En que nodo cortamos el árbol? 
+
+- Es preferible tener un modelo más simple que sobreparametrizar el ajuste. Para ello podemos utilizar el ***Complexity parameter (CP)***, que controla el tamaño del árbol de decisión. Si el coste de añadir otro nodo (u otra variable) a partir del nodo actual está por encima del valor del cp, entonces el árbol no continúa creciendo. Mas información [aquí](https://statinfer.com/203-3-10-pruning-a-decision-tree-in-r/). 
+
+
+```{r fitdronq-party4, fig.cap="Relación entre el fitovolumen estimado con DronQ y con Quadrat. Partición de la varianza (modelo global)"}
+ggparty(ctfit) + 
+  geom_edge() +
+  geom_edge_label(colour = "grey", size = 4) +
+  geom_node_plot(gglist = list(
+    geom_point(aes(x = quadrat,y = dronQ)),
+    geom_smooth(aes(x = quadrat, y=dronQ), method = lm, se = FALSE),
+    geom_abline(slope = 1, colour = "gray"),
+    theme_bw(base_size = 10),
+ ylab(expression(Fitovolumen[dronQ]~(m^3~ha^{-1}))),
+ xlab(expression(Fitovolumen[quadrat]~(m^3~ha^{-1})))),
+                scales = "fixed", 
+                shared_axis_labels = TRUE,
+                shared_legend = TRUE,
+                legend_separator = TRUE, 
+                id = "terminal") +
+   geom_node_label(aes(col = splitvar),
+                  line_list = list(aes(label = paste("Node", id)),
+                                   aes(label = splitvar),
+                                   aes(label = scales::pvalue(p.value, accuracy = 0.001, 
+                                                              decimal.mark = ".", 
+                                                              add_p = TRUE))), 
+                                                     
+          line_gpar = list(list(size = 8, col = "black", fontface = "bold"),
+                                   list(size = 8),
+                                   list(size = 8)),
+                  ids = "inner") + 
+  geom_node_label(aes(label = paste0("Node ", id, ", (n= ", nodesize, ")")),
+                  fontface = "bold",
+                  ids = "terminal",
+                  size = 2, 
+                  nudge_y = 0.01) +
+  theme(legend.position = "none")
+```
+
+```{r fitdronq-error4}
+set.seed(123)
+ctfitrpart <- rpart(dronQ ~ quadrat, data = dffit_dronq)
+printcp(ctfitrpart) %>% 
+  kbl(caption = "CP Error - Modelo global Fitvolumen",
+      digits = c(4,0,3,3,4)) %>% 
+  kable_paper("hover", full_width = F)
+
+```
+
+Al explorar este modelo observamos que el error (xerror) (Tabla \@ref(tab:fitdronq-error4)) no se disminuye sustancialmente a partir del 2 item (nsplit = 1) (Figura \@ref(fig:fitdronq-error4plot)). Por tanto volvemos a modelar, usando un cp = 0.3.  
+
+```{r fitdronq-error4plot, fig.cap="Error relativo frente a CP del modelo de partición de la varianza completo del fitovolumen"}
+plotcp(ctfitrpart)
+```
+
+```{r}
+set.seed(123)
+ctfitrpart2 <- rpart(dronQ ~ quadrat, data = dffit_dronq, control = 
+               rpart.control(minsplit = 2, cp=0.3))
+
+printcp(ctfitrpart2) %>% 
+  kbl(caption = "CP Error - Modelo global Fitovolumen",
+      digits = c(4,0,3,3,4)) %>% 
+  kable_paper("hover", full_width = F)
+
+```
+
+```{r fitdronq-party, fig.cap="Relación entre el fitovolumen estimado con DronQ y con Quadrat. Partición de la varianza (modelo final)"}
+set.seed(123)
+ctfit_ok <- partykit::ctree(dronQ ~ quadrat, data = dffit_dronq,
+                         control = partykit::ctree_control(minsplit= 1,alpha = 0.05, maxdepth = 2))
+
+ggparty(ctfit_ok) + 
+  geom_edge() +
+  geom_edge_label(colour = "grey", size = 4) + 
+  geom_node_plot(gglist = list(
+    geom_point(aes(x = quadrat,y = dronQ)),
+    geom_smooth(aes(x=quadrat, y=dronQ), method = lm, se = FALSE),
+    geom_abline(slope = 1, colour = "gray"),
+    theme_bw(base_size = 10),
+    ylab(expression(Fitovolumen[dronQ]~(m^3~ha^{-1}))),
+ xlab(expression(Fitovolumen[quadrat]~(m^3~ha^{-1}))) 
+    ),
+                scales = "fixed", 
+                shared_axis_labels = TRUE,
+                shared_legend = TRUE,
+                legend_separator = TRUE, 
+                id = "terminal") +
+   geom_node_label(aes(col = splitvar),
+                  line_list = list(aes(label = paste("Node", id)),
+                                   aes(label = splitvar),
+                                   aes(label = scales::pvalue(p.value, accuracy = 0.001, 
+                                                              decimal.mark = ".", 
+                                                              add_p = TRUE))), 
+                                                     
+          line_gpar = list(list(size = 8, col = "black", fontface = "bold"),
+                                   list(size = 8),
+                                   list(size = 8)),
+                  ids = "inner") + 
+  geom_node_label(aes(label = paste0("Node ", id, ", (n= ", nodesize, ")")),
+                  fontface = "bold",
+                  ids = "terminal",
+                  size = 2, 
+                  nudge_y = 0.01) +
+  theme(legend.position = "none")
+```
+
+
+```{r fitdronq-correla-partida, fig.cap="Correlación entre los valores de fitovolumen estimados por dronQ y Quadrat, considerando dos grupos (Fitovolumen inferiores (azul) y superiores (negro) a 681 % (en campo)."}
+fffit <- dffit_dronq %>% 
+  mutate(clase = case_when(
+    quadrat <= 681 ~ as.character("fit_low"),
+    TRUE ~ "fit_high"
+  ))
+
+ggscatter(fffit, 
+          x = "quadrat", 
+          y = "dronQ",
+          add = "reg.line",
+  conf.int = TRUE, 
+  color = "clase", shape = "clase", 
+  ylab =expression(Fitovolumen[dronQ]~(m^3~ha^{-1})),
+ xlab = expression(Fitovolumen[quadrat]~(m^3~ha^{-1}))) + 
+  # xlim(0,100) + ylim(0,100) + 
+  stat_cor(
+    label.y.npc="top", label.x.npc = "left",
+    aes(color = clase, 
+        label = paste(..rr.label.., ..p.label.., sep = "~`,`~")),
+    p.accuracy = 0.001,
+    r.accuracy = 0.001
+    )  + 
+  geom_abline(slope = 1) + 
+  scale_shape_manual(values = c(19,19), name = "") +
+  scale_colour_manual(values = c("black","blue"), name = "") + 
+  scale_fill_manual(values = c("black","blue"), name = "") 
+  
+
+```
+
+```{r fitdronq-rmsegrupos}
+dfffit.rmse_groups <- fffit %>% group_by(clase) %>% 
+  summarise(rmse = round(
+    Metrics::rmse(dronQ, quadrat),4),
+    min = min(quadrat), 
+    max = max(quadrat),
+    rmsen.minmax = rmse / (max(quadrat) - min(quadrat))*100)
+
+dfffit.rmse_groups %>% 
+  kbl(caption = "Fitovolumen (por grupos) || RMSE",
+                digits = c(0, 2,0,0,2)) %>% 
+  kable_paper("hover", full_width = F)
+
+```
+
+
+
+
+## Fitovolumen dronT ~ LI
+
+```{r}
+fit_p <- fit_tlonger %>%  
+  dplyr::select(metodo =name, value, parcela) 
+```
+
+### Summary values 
+```{r fitdparcela-resumen}
+sfitparcela <- fit_p %>% 
+  group_by(metodo) %>% 
+  summarise(mean = mean(value, na.rm = TRUE), 
+            sd = sd(value, na.rm = TRUE), 
+            se = sd/sqrt(length(value)),
+            cv = sd/mean*100,
+            median = median(value, na.rm=TRUE),
+            min = min(value), 
+            max = max(value),
+            n = length(value))
+
+sfitparcela  %>% kable(digits = 2,
+               caption = "Fitovolumen dron Parcela || Summary") %>% 
+    kable_paper("hover", full_width = F)
+```
+
+### Comparación de métodos 
+
+```{r}
+# normalidad
+s <- shapiro.test(fit_p$value)
+
+# homocedasticidad
+b <- bartlett.test(fit_p$value, fit_p$metodo, data=fit_p)
+
+```
+
+Los datos son normales (`r paste0("W = ",round(s$statistic,2),  "; ",  scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`); pero no se cumple la  homocedasticidad (`r paste0("Bartlett's K-squared = ", round(b$statistic, 2),"; ", scales::pvalue(b$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`). Aplicamos una comparación no paramétrica (Wilcoxon Test), y observamos que **no** existen diferencias significativas entre los valores de fitovolumen estimados en el **line intercept** frente a los estimados por el **dronT** (parcela) (Tabla \@ref(tab:fitdp-test); Figura \@ref(fig:fitdp-violin)). 
+
+```{r fitdp-test}
+fit_p_w <- wilcox.test(value ~ metodo, data = fit_p) 
+
+broom::tidy(fit_p_w) %>% 
+  mutate(p.value = scales::pvalue(p.value, accuracy = 0.001)) %>% 
+  kbl(caption = "Fitovolumen DronT ~ Line Intercept || Wilcoxon Comparison test") %>% 
+  kable_paper("hover", full_width = F)
+```
+
+
+```{r fitdp-violin, fig.cap="Comparación de los valores de fitovolumen entre Dron Parcela y Line Intercept."}
+
+set.seed(123)
+ggbetweenstats(fit_p, 
+               x = metodo, 
+               y= value, 
+               type = "np",
+               ylab=expression(Fitovolumen~(m^3~ha^{-1})),
+               p.adjust.method = "bonferroni", 
+               pairwise.display = "s") 
+```
+
+
+### Correlación 
+
+No existe una buena correlación entre los valores de fitovolumen ofrecidos por **line intercept** y los datos por el dron en la parcela de 500 m^2 (Figura \@ref(fig:fitdparcela-correla)). 
+
+```{r fitdparcela-correla, fig.cap="Correlación entre los valores de fitovolumen estimados por dronParcela con respecto a Line Intercept"}
+fit_p %>% 
+  correla_pares("dronT", 
+                 xlab = expression('Fitovolumen'['Line Intercept']~(m^3~ha^{-1})),
+                ylab = expression('Fitovolumen'['dron 500 '*m^2]~(m^3~ha^{-1}))) + 
+  ylim(c(50,1250)) + 
+  xlim(c(50,1250)) +
+  scale_shape_manual(values = 19, name = "") +
+  scale_colour_manual(values = "black", name = "") + 
+  scale_fill_manual(values = "black", name = "") +
+  theme(legend.position = "none")
+```
+
+
+
+
 
