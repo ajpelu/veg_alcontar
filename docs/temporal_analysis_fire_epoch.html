@@ -1,0 +1,4255 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Comparison fire epoch (Congreso Pastos 2023)</title>
+
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Analysis of vegetation parameters (Alcóntar)</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/ajpelu/veg_alcontar">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Comparison fire epoch (Congreso Pastos 2023)</h1>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks">
+Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2023-04-13
+</p>
+<p>
+<strong>Checks:</strong>
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+7
+<span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+0
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>veg_alcontar/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the
+reproducibility checks that were applied when the results were created.
+The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you
+know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>Environment:</strong> empty
+</a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global
+environment can affect the analysis in your R Markdown file in unknown ways.
+For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20211007code">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>Seed:</strong> <code>set.seed(20211007)</code>
+</a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20211007code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20211007)</code> was run prior to running the code in the R Markdown file.
+Setting a seed ensures that any results that rely on randomness, e.g.
+subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>Session information:</strong> recorded
+</a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is
+critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>Cache:</strong> none
+</a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident
+that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>File paths:</strong> relative
+</a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project
+makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartreeaab8ee0243f82c4c76911540248d84f611bb9cb1targetblankaab8ee0a">
+<span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<strong>Repository version:</strong> <a href="https://github.com/serpam/veg_alcontar/tree/aab8ee0243f82c4c76911540248d84f611bb9cb1" target="_blank">aab8ee0</a>
+</a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomserpamvegalcontartreeaab8ee0243f82c4c76911540248d84f611bb9cb1targetblankaab8ee0a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and
+connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/serpam/veg_alcontar/tree/aab8ee0243f82c4c76911540248d84f611bb9cb1" target="_blank">aab8ee0</a>.
+See the <em>Past versions</em> tab to see a history of the changes made to the
+R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the
+analysis have been committed to Git prior to generating the results (you can
+use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only
+checks the R Markdown file, but you know if there are other scripts or data
+files that it depends on. Below is the status of the Git repository when the
+results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    data/.DS_Store
+
+Untracked files:
+    Untracked:  data/datos_sep2023_todos_juntos.xlsx
+    Untracked:  output/paper_SUDOE/plot_comparacion.png
+    Untracked:  output/paper_SUDOE/plot_correla.png
+    Untracked:  output/paper_SUDOE/plot_tecnologico.png
+    Untracked:  output/paper_SUDOE/plot_tecnologico_LI.png
+
+Unstaged changes:
+    Modified:   analysis/compara_methods_SUDOE.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in
+this status report because it is ok for generated content to have uncommitted
+changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made
+to the R Markdown (<code>analysis/temporal_analysis_fire_epoch.Rmd</code>) and HTML (<code>docs/temporal_analysis_fire_epoch.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table below to
+view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/serpam/veg_alcontar/blob/aab8ee0243f82c4c76911540248d84f611bb9cb1/analysis/temporal_analysis_fire_epoch.Rmd" target="_blank">aab8ee0</a>
+</td>
+<td>
+ajpelu
+</td>
+<td>
+2023-04-13
+</td>
+<td>
+add analysis congreso pastos 2023
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<ul>
+<li>Read data</li>
+</ul>
+<pre class="r"><code>veg_raw &lt;- readxl::read_excel(here::here(&quot;data/datos_sep2023_todos_juntos.xlsx&quot;)) |&gt; 
+  janitor::clean_names() 
+
+autumn_fire &lt;- lubridate::ymd(&quot;2018-12-18&quot;)
+spring_fire &lt;- lubridate::ymd(&quot;2019-05-07&quot;)
+
+veg &lt;- veg_raw |&gt; 
+  filter(zona != &quot;Quemado sin pastoreo&quot;) |&gt; 
+  rename(fecha = fecha_muestreos) |&gt; 
+  mutate(treat = as.factor(case_when(
+    zona == &quot;Quemado con pastoreo&quot; ~ &quot;Ot&quot;, 
+    TRUE ~ &quot;Pr&quot;
+  ))) |&gt; 
+  mutate(meses = ifelse(treat == &quot;Ot&quot;,
+                        as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1))),
+                        as.numeric(as.character(lubridate::interval(spring_fire, lubridate::ymd(fecha)) %/% months(1))))) |&gt; 
+  mutate(quadrat = as.factor(quadrat)) |&gt; 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  ))
+
+veg_total &lt;- veg |&gt; filter(tipo == &quot;total&quot;)
+veg_mt &lt;- veg |&gt; filter(tipo == &quot;Macrochloa tenacissima&quot;) 
+veg_gs &lt;- veg |&gt; filter(tipo == &quot;Genista scorpius&quot;) 
+
+# Subset of data (pre/post) 
+ad_total &lt;- veg_total |&gt; filter(meses %in% c(-1, 22, 24)) 
+ad_mt &lt;-  veg_mt |&gt; filter(meses %in% c(-1, 22, 24)) 
+ad_gs &lt;- veg_gs |&gt; filter(meses %in% c(-1, 22, 24))</code></pre>
+</div>
+<div id="all-sps" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> All sps</h1>
+<div id="total-cover" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> Total Cover</h2>
+<div id="model" class="section level3" number="2.1.1">
+<h3><span class="header-section-number">2.1.1</span> Model</h3>
+<pre class="r"><code>f &lt;- as.formula(cob_total ~ s(meses, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg_total, 
+          family = nb)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         47%
+      tweedie         34%
+       cauchy          9%
+
+Predicted Distribution of Response
+
+               Distribution Probability
+ neg. binomial (zero-infl.)         62%
+              beta-binomial         25%
+                exponential          3%</code></pre>
+</div>
+<div id="model-validation" class="section level3" number="2.1.2">
+<h3><span class="header-section-number">2.1.2</span> Model validation</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients" class="section level3" number="2.1.3">
+<h3><span class="header-section-number">2.1.3</span> Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+3.1363
+</td>
+<td style="text-align:left;">
+0.1006
+</td>
+<td style="text-align:left;">
+31.1906
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatPr
+</td>
+<td style="text-align:left;">
+-0.1774
+</td>
+<td style="text-align:left;">
+0.1436
+</td>
+<td style="text-align:left;">
+-1.2356
+</td>
+<td style="text-align:left;">
+0.2175
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:left;">
+3.9313
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+96.0674
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects" class="section level3" number="2.1.4">
+<h3><span class="header-section-number">2.1.4</span> Visualizing effects</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/plot_rectot-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pre-post-autumn" class="section level3" number="2.1.5">
+<h3><span class="header-section-number">2.1.5</span> Pre-post (autumn)</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+sumsq
+</th>
+<th style="text-align:right;">
+meansq
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+29238.49
+</td>
+<td style="text-align:right;">
+29238.49
+</td>
+<td style="text-align:right;">
+42.98
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.9797
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses:treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+555.63
+</td>
+<td style="text-align:right;">
+555.63
+</td>
+<td style="text-align:right;">
+0.82
+</td>
+<td style="text-align:right;">
+0.3679
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+124
+</td>
+<td style="text-align:right;">
+84364.31
+</td>
+<td style="text-align:right;">
+680.36
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="phytovol" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Phytovol</h2>
+<div id="model-1" class="section level3" number="2.2.1">
+<h3><span class="header-section-number">2.2.1</span> Model</h3>
+<pre class="r"><code>f &lt;- as.formula(fitovol ~ s(meses, k=5, bs=&quot;cs&quot;) + treat)
+m &lt;- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg_total, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       cauchy         41%
+      tweedie         31%
+       normal         25%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+    lognormal         72%
+      tweedie         12%
+            F          9%</code></pre>
+</div>
+<div id="model-validation-1" class="section level3" number="2.2.2">
+<h3><span class="header-section-number">2.2.2</span> Model validation</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-1" class="section level3" number="2.2.3">
+<h3><span class="header-section-number">2.2.3</span> Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+6.0647
+</td>
+<td style="text-align:left;">
+0.1952
+</td>
+<td style="text-align:left;">
+31.0758
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatPr
+</td>
+<td style="text-align:left;">
+-0.2432
+</td>
+<td style="text-align:left;">
+0.2774
+</td>
+<td style="text-align:left;">
+-0.8767
+</td>
+<td style="text-align:left;">
+0.3813
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:left;">
+3.9171
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+231.9889
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-1" class="section level3" number="2.2.4">
+<h3><span class="header-section-number">2.2.4</span> Visualizing effects</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/plot_fitovol-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pre-post-autumn-1" class="section level3" number="2.2.5">
+<h3><span class="header-section-number">2.2.5</span> Pre-post (autumn)</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+sumsq
+</th>
+<th style="text-align:right;">
+meansq
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+239540101
+</td>
+<td style="text-align:right;">
+239540101
+</td>
+<td style="text-align:right;">
+43.29
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+3904958
+</td>
+<td style="text-align:right;">
+3904958
+</td>
+<td style="text-align:right;">
+0.71
+</td>
+<td style="text-align:right;">
+0.4025
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses:treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+867093
+</td>
+<td style="text-align:right;">
+867093
+</td>
+<td style="text-align:right;">
+0.16
+</td>
+<td style="text-align:right;">
+0.6929
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+124
+</td>
+<td style="text-align:right;">
+686064856
+</td>
+<td style="text-align:right;">
+5532781
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="macrochloa-tenacissima" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Macrochloa tenacissima</h1>
+<div id="total-cover-1" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Total Cover</h2>
+<div id="model-2" class="section level3" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Model</h3>
+<pre class="r"><code>f &lt;- as.formula(cob_total ~ s(meses, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg_mt, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         53%
+      tweedie         28%
+       cauchy          9%
+
+Predicted Distribution of Response
+
+               Distribution Probability
+                    tweedie         34%
+                      gamma         19%
+ neg. binomial (zero-infl.)         16%</code></pre>
+</div>
+<div id="model-validation-2" class="section level3" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> Model validation</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-2" class="section level3" number="3.1.3">
+<h3><span class="header-section-number">3.1.3</span> Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+2.2188
+</td>
+<td style="text-align:left;">
+0.4782
+</td>
+<td style="text-align:left;">
+4.6397
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatPr
+</td>
+<td style="text-align:left;">
+0.2735
+</td>
+<td style="text-align:left;">
+0.6524
+</td>
+<td style="text-align:left;">
+0.4192
+</td>
+<td style="text-align:left;">
+0.6759
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:left;">
+3.6961
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+33.0268
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-2" class="section level3" number="3.1.4">
+<h3><span class="header-section-number">3.1.4</span> Visualizing effects</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/plot_rectot_mt-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pre-post-autumn-2" class="section level3" number="3.1.5">
+<h3><span class="header-section-number">3.1.5</span> Pre-post (autumn)</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+sumsq
+</th>
+<th style="text-align:right;">
+meansq
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+9102.97
+</td>
+<td style="text-align:right;">
+9102.97
+</td>
+<td style="text-align:right;">
+8.12
+</td>
+<td style="text-align:right;">
+0.0068
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+344.67
+</td>
+<td style="text-align:right;">
+344.67
+</td>
+<td style="text-align:right;">
+0.31
+</td>
+<td style="text-align:right;">
+0.5822
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses:treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+908.20
+</td>
+<td style="text-align:right;">
+908.20
+</td>
+<td style="text-align:right;">
+0.81
+</td>
+<td style="text-align:right;">
+0.3733
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+41
+</td>
+<td style="text-align:right;">
+45950.50
+</td>
+<td style="text-align:right;">
+1120.74
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="phytovol-1" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Phytovol</h2>
+<div id="model-3" class="section level3" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> Model</h3>
+<pre class="r"><code>f &lt;- as.formula(fitovol ~ s(meses, k=5, bs=&quot;cs&quot;) + treat)
+m &lt;- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg_mt, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         50%
+      tweedie         25%
+       cauchy         12%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+    lognormal         59%
+      tweedie         12%
+            F          9%</code></pre>
+</div>
+<div id="model-validation-3" class="section level3" number="3.2.2">
+<h3><span class="header-section-number">3.2.2</span> Model validation</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-3" class="section level3" number="3.2.3">
+<h3><span class="header-section-number">3.2.3</span> Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+5.7937
+</td>
+<td style="text-align:left;">
+0.5415
+</td>
+<td style="text-align:left;">
+10.6995
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatPr
+</td>
+<td style="text-align:left;">
+0.3420
+</td>
+<td style="text-align:left;">
+0.7379
+</td>
+<td style="text-align:left;">
+0.4635
+</td>
+<td style="text-align:left;">
+0.6439
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:left;">
+3.7978
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+75.5143
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-3" class="section level3" number="3.2.4">
+<h3><span class="header-section-number">3.2.4</span> Visualizing effects</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/plot_fitovol_mt-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pre-post-autumn-3" class="section level3" number="3.2.5">
+<h3><span class="header-section-number">3.2.5</span> Pre-post (autumn)</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+sumsq
+</th>
+<th style="text-align:right;">
+meansq
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+137417699
+</td>
+<td style="text-align:right;">
+137417699
+</td>
+<td style="text-align:right;">
+17.86
+</td>
+<td style="text-align:right;">
+0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+9546071
+</td>
+<td style="text-align:right;">
+9546071
+</td>
+<td style="text-align:right;">
+1.24
+</td>
+<td style="text-align:right;">
+0.2719
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses:treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1792256
+</td>
+<td style="text-align:right;">
+1792256
+</td>
+<td style="text-align:right;">
+0.23
+</td>
+<td style="text-align:right;">
+0.6320
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+41
+</td>
+<td style="text-align:right;">
+315547113
+</td>
+<td style="text-align:right;">
+7696271
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="genista-scorpius" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Genista scorpius</h1>
+<div id="total-cover-2" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Total Cover</h2>
+<div id="model-4" class="section level3" number="4.1.1">
+<h3><span class="header-section-number">4.1.1</span> Model</h3>
+<pre class="r"><code>f &lt;- as.formula(cob_total ~ s(meses, k=5, bs=&quot;cs&quot;) + treat)
+
+m &lt;- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg_gs, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       normal         38%
+      tweedie         34%
+       cauchy         28%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+      tweedie         41%
+  half-cauchy         25%
+    lognormal         12%</code></pre>
+</div>
+<div id="model-validation-4" class="section level3" number="4.1.2">
+<h3><span class="header-section-number">4.1.2</span> Model validation</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-4" class="section level3" number="4.1.3">
+<h3><span class="header-section-number">4.1.3</span> Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+1.7469
+</td>
+<td style="text-align:left;">
+0.2615
+</td>
+<td style="text-align:left;">
+6.6809
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatPr
+</td>
+<td style="text-align:left;">
+-0.4106
+</td>
+<td style="text-align:left;">
+0.3856
+</td>
+<td style="text-align:left;">
+-1.0649
+</td>
+<td style="text-align:left;">
+0.2890
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:left;">
+3.8165
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+64.7466
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-4" class="section level3" number="4.1.4">
+<h3><span class="header-section-number">4.1.4</span> Visualizing effects</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/plot_rectot_gs-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pre-post-autumn-4" class="section level3" number="4.1.5">
+<h3><span class="header-section-number">4.1.5</span> Pre-post (autumn)</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+sumsq
+</th>
+<th style="text-align:right;">
+meansq
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+18954.52
+</td>
+<td style="text-align:right;">
+18954.52
+</td>
+<td style="text-align:right;">
+46.15
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+419.05
+</td>
+<td style="text-align:right;">
+419.05
+</td>
+<td style="text-align:right;">
+1.02
+</td>
+<td style="text-align:right;">
+0.3181
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses:treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+335.16
+</td>
+<td style="text-align:right;">
+335.16
+</td>
+<td style="text-align:right;">
+0.82
+</td>
+<td style="text-align:right;">
+0.3714
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+43
+</td>
+<td style="text-align:right;">
+17662.40
+</td>
+<td style="text-align:right;">
+410.75
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="phytovol-2" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Phytovol</h2>
+<div id="model-5" class="section level3" number="4.2.1">
+<h3><span class="header-section-number">4.2.1</span> Model</h3>
+<pre class="r"><code>f &lt;- as.formula(fitovol ~ s(meses, k=5, bs=&quot;cs&quot;) + treat)
+m &lt;- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg_gs, 
+          family = tw)</code></pre>
+<pre><code>
+ Maximum number of PQL iterations:  20 </code></pre>
+<pre><code># Distribution of Model Family
+
+Predicted Distribution of Residuals
+
+ Distribution Probability
+       cauchy         34%
+      tweedie         34%
+       normal         31%
+
+Predicted Distribution of Response
+
+ Distribution Probability
+    lognormal         59%
+      tweedie         12%
+            F          9%</code></pre>
+</div>
+<div id="model-validation-5" class="section level3" number="4.2.2">
+<h3><span class="header-section-number">4.2.2</span> Model validation</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="coefficients-5" class="section level3" number="4.2.3">
+<h3><span class="header-section-number">4.2.3</span> Coefficients</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+A. parametric coefficients
+</td>
+<td style="text-align:left;font-weight: bold;">
+Estimate
+</td>
+<td style="text-align:left;font-weight: bold;">
+Std. Error
+</td>
+<td style="text-align:left;font-weight: bold;">
+t-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+5.1540
+</td>
+<td style="text-align:left;">
+0.2480
+</td>
+<td style="text-align:left;">
+20.7843
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatPr
+</td>
+<td style="text-align:left;">
+-0.4222
+</td>
+<td style="text-align:left;">
+0.3586
+</td>
+<td style="text-align:left;">
+-1.1774
+</td>
+<td style="text-align:left;">
+0.2413
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+B. smooth terms
+</td>
+<td style="text-align:left;font-weight: bold;">
+edf
+</td>
+<td style="text-align:left;font-weight: bold;">
+Ref.df
+</td>
+<td style="text-align:left;font-weight: bold;">
+F-value
+</td>
+<td style="text-align:left;font-weight: bold;">
+p-value
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:left;">
+3.7404
+</td>
+<td style="text-align:left;">
+4.0000
+</td>
+<td style="text-align:left;">
+72.7425
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualizing-effects-5" class="section level3" number="4.2.4">
+<h3><span class="header-section-number">4.2.4</span> Visualizing effects</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-56-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/plot_fitovol_gs-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pre-post-autumn-5" class="section level3" number="4.2.5">
+<h3><span class="header-section-number">4.2.5</span> Pre-post (autumn)</h3>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-58-1.png" width="672" style="display: block; margin: auto;" /></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+sumsq
+</th>
+<th style="text-align:right;">
+meansq
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+meses
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+119276185.2
+</td>
+<td style="text-align:right;">
+119276185.2
+</td>
+<td style="text-align:right;">
+59.21
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+155552.4
+</td>
+<td style="text-align:right;">
+155552.4
+</td>
+<td style="text-align:right;">
+0.08
+</td>
+<td style="text-align:right;">
+0.7824
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meses:treat
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+641482.1
+</td>
+<td style="text-align:right;">
+641482.1
+</td>
+<td style="text-align:right;">
+0.32
+</td>
+<td style="text-align:right;">
+0.5755
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+43
+</td>
+<td style="text-align:right;">
+86619094.1
+</td>
+<td style="text-align:right;">
+2014397.5
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="summary" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Summary</h1>
+<ul>
+<li>Parametric terms</li>
+</ul>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+Tipo
+</th>
+<th style="text-align:center;">
+Variable
+</th>
+<th style="text-align:right;">
+term
+</th>
+<th style="text-align:right;">
+Estimate
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:right;">
+F
+</th>
+<th style="text-align:center;">
+p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+All species
+</td>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:right;">
+treatOt
+</td>
+<td style="text-align:right;">
+3.136
+</td>
+<td style="text-align:right;">
+0.101
+</td>
+<td style="text-align:right;">
+31.19
+</td>
+<td style="text-align:center;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+All species
+</td>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:right;">
+treatPr
+</td>
+<td style="text-align:right;">
+-0.177
+</td>
+<td style="text-align:right;">
+0.144
+</td>
+<td style="text-align:right;">
+-1.24
+</td>
+<td style="text-align:center;">
+0.2175
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+All species
+</td>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:right;">
+treatOt
+</td>
+<td style="text-align:right;">
+6.065
+</td>
+<td style="text-align:right;">
+0.195
+</td>
+<td style="text-align:right;">
+31.08
+</td>
+<td style="text-align:center;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+All species
+</td>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:right;">
+treatPr
+</td>
+<td style="text-align:right;">
+-0.243
+</td>
+<td style="text-align:right;">
+0.277
+</td>
+<td style="text-align:right;">
+-0.88
+</td>
+<td style="text-align:center;">
+0.3813
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Macrochloa tenacissima
+</td>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:right;">
+treatOt
+</td>
+<td style="text-align:right;">
+2.219
+</td>
+<td style="text-align:right;">
+0.478
+</td>
+<td style="text-align:right;">
+4.64
+</td>
+<td style="text-align:center;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Macrochloa tenacissima
+</td>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:right;">
+treatPr
+</td>
+<td style="text-align:right;">
+0.273
+</td>
+<td style="text-align:right;">
+0.652
+</td>
+<td style="text-align:right;">
+0.42
+</td>
+<td style="text-align:center;">
+0.6759
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Macrochloa tenacissima
+</td>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:right;">
+treatOt
+</td>
+<td style="text-align:right;">
+5.794
+</td>
+<td style="text-align:right;">
+0.541
+</td>
+<td style="text-align:right;">
+10.70
+</td>
+<td style="text-align:center;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Macrochloa tenacissima
+</td>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:right;">
+treatPr
+</td>
+<td style="text-align:right;">
+0.342
+</td>
+<td style="text-align:right;">
+0.738
+</td>
+<td style="text-align:right;">
+0.46
+</td>
+<td style="text-align:center;">
+0.6439
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Genista scorpius
+</td>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:right;">
+treatOt
+</td>
+<td style="text-align:right;">
+1.747
+</td>
+<td style="text-align:right;">
+0.261
+</td>
+<td style="text-align:right;">
+6.68
+</td>
+<td style="text-align:center;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Genista scorpius
+</td>
+<td style="text-align:center;">
+Total cover
+</td>
+<td style="text-align:right;">
+treatPr
+</td>
+<td style="text-align:right;">
+-0.411
+</td>
+<td style="text-align:right;">
+0.386
+</td>
+<td style="text-align:right;">
+-1.06
+</td>
+<td style="text-align:center;">
+0.289
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Genista scorpius
+</td>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:right;">
+treatOt
+</td>
+<td style="text-align:right;">
+5.154
+</td>
+<td style="text-align:right;">
+0.248
+</td>
+<td style="text-align:right;">
+20.78
+</td>
+<td style="text-align:center;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Genista scorpius
+</td>
+<td style="text-align:center;">
+Fitovol
+</td>
+<td style="text-align:right;">
+treatPr
+</td>
+<td style="text-align:right;">
+-0.422
+</td>
+<td style="text-align:right;">
+0.359
+</td>
+<td style="text-align:right;">
+-1.18
+</td>
+<td style="text-align:center;">
+0.2413
+</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Smooth terms</li>
+</ul>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+tipo
+</th>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+edf
+</th>
+<th style="text-align:right;">
+ref.df
+</th>
+<th style="text-align:right;">
+F
+</th>
+<th style="text-align:left;">
+p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+All species
+</td>
+<td style="text-align:left;">
+Total cover
+</td>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:right;">
+3.931
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+96.07
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+All species
+</td>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:right;">
+3.917
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+231.99
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Macrochloa tenacissima
+</td>
+<td style="text-align:left;">
+Total cover
+</td>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:right;">
+3.696
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+33.03
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Macrochloa tenacissima
+</td>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:right;">
+3.798
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+75.51
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Genista scorpius
+</td>
+<td style="text-align:left;">
+Total cover
+</td>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:right;">
+3.817
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+64.75
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Genista scorpius
+</td>
+<td style="text-align:left;">
+Fitovol
+</td>
+<td style="text-align:left;">
+s(meses)
+</td>
+<td style="text-align:right;">
+3.740
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+72.74
+</td>
+<td style="text-align:left;">
+&lt; 0.0001
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="all-plots" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> All plots</h1>
+<p><img src="figure/temporal_analysis_fire_epoch.Rmd/unnamed-chunk-66-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="summary-table" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> Summary table</h1>
+<div id="hkdkckcrcl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hkdkckcrcl table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#hkdkckcrcl thead, #hkdkckcrcl tbody, #hkdkckcrcl tfoot, #hkdkckcrcl tr, #hkdkckcrcl td, #hkdkckcrcl th {
+  border-style: none;
+}
+
+#hkdkckcrcl p {
+  margin: 0;
+  padding: 0;
+}
+
+#hkdkckcrcl .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#hkdkckcrcl .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#hkdkckcrcl .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#hkdkckcrcl .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#hkdkckcrcl .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#hkdkckcrcl .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#hkdkckcrcl .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#hkdkckcrcl .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#hkdkckcrcl .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#hkdkckcrcl .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#hkdkckcrcl .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#hkdkckcrcl .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#hkdkckcrcl .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#hkdkckcrcl .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#hkdkckcrcl .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hkdkckcrcl .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#hkdkckcrcl .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#hkdkckcrcl .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#hkdkckcrcl .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hkdkckcrcl .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#hkdkckcrcl .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hkdkckcrcl .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#hkdkckcrcl .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hkdkckcrcl .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hkdkckcrcl .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hkdkckcrcl .gt_left {
+  text-align: left;
+}
+
+#hkdkckcrcl .gt_center {
+  text-align: center;
+}
+
+#hkdkckcrcl .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#hkdkckcrcl .gt_font_normal {
+  font-weight: normal;
+}
+
+#hkdkckcrcl .gt_font_bold {
+  font-weight: bold;
+}
+
+#hkdkckcrcl .gt_font_italic {
+  font-style: italic;
+}
+
+#hkdkckcrcl .gt_super {
+  font-size: 65%;
+}
+
+#hkdkckcrcl .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#hkdkckcrcl .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#hkdkckcrcl .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#hkdkckcrcl .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#hkdkckcrcl .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#hkdkckcrcl .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#hkdkckcrcl .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <caption><span id="tab:unnamed-chunk-67">Table 7.1: </span><strong>All species</strong></caption>
+  <thead>
+    
+    <tr class="gt_col_headings gt_spanner_row">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="6" scope="colgroup" id="&lt;strong&gt;Ot&lt;/strong&gt;">
+        <span class="gt_column_spanner"><strong>Ot</strong></span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="&lt;strong&gt;Pr&lt;/strong&gt;">
+        <span class="gt_column_spanner"><strong>Pr</strong></span>
+      </th>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;-1&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>-1</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;5&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>5</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;12&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>12</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;17&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>17</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;22&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>22</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;29&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>29</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;-1&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>-1</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;7&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>7</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;12&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>12</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;18&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>18</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;24&lt;/strong&gt;, N = 32&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>24</strong>, N = 32<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="label" class="gt_row gt_left">cob_total</td>
+<td headers="stat_1_1" class="gt_row gt_center">59.22 ± 5.42</td>
+<td headers="stat_2_1" class="gt_row gt_center">16.22 ± 2.26</td>
+<td headers="stat_3_1" class="gt_row gt_center">16.78 ± 2.41</td>
+<td headers="stat_4_1" class="gt_row gt_center">28.06 ± 3.24</td>
+<td headers="stat_5_1" class="gt_row gt_center">25.97 ± 3.25</td>
+<td headers="stat_6_1" class="gt_row gt_center">32.00 ± 3.54</td>
+<td headers="stat_1_2" class="gt_row gt_center">54.94 ± 5.68</td>
+<td headers="stat_2_2" class="gt_row gt_center">8.47 ± 2.00</td>
+<td headers="stat_3_2" class="gt_row gt_center">21.94 ± 2.58</td>
+<td headers="stat_4_2" class="gt_row gt_center">18.41 ± 2.79</td>
+<td headers="stat_5_2" class="gt_row gt_center">27.50 ± 3.58</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">fitovol</td>
+<td headers="stat_1_1" class="gt_row gt_center">3,415.15 ± 502.49</td>
+<td headers="stat_2_1" class="gt_row gt_center">261.85 ± 57.16</td>
+<td headers="stat_3_1" class="gt_row gt_center">331.35 ± 76.23</td>
+<td headers="stat_4_1" class="gt_row gt_center">600.53 ± 152.12</td>
+<td headers="stat_5_1" class="gt_row gt_center">612.47 ± 135.99</td>
+<td headers="stat_6_1" class="gt_row gt_center">793.42 ± 204.37</td>
+<td headers="stat_1_2" class="gt_row gt_center">3,600.32 ± 600.10</td>
+<td headers="stat_2_2" class="gt_row gt_center">196.49 ± 63.90</td>
+<td headers="stat_3_2" class="gt_row gt_center">351.24 ± 80.13</td>
+<td headers="stat_4_2" class="gt_row gt_center">438.44 ± 116.67</td>
+<td headers="stat_5_2" class="gt_row gt_center">897.76 ± 245.94</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="12"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Mean ± std.error</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<div id="eughmxxeoy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#eughmxxeoy table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#eughmxxeoy thead, #eughmxxeoy tbody, #eughmxxeoy tfoot, #eughmxxeoy tr, #eughmxxeoy td, #eughmxxeoy th {
+  border-style: none;
+}
+
+#eughmxxeoy p {
+  margin: 0;
+  padding: 0;
+}
+
+#eughmxxeoy .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#eughmxxeoy .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#eughmxxeoy .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#eughmxxeoy .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#eughmxxeoy .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#eughmxxeoy .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#eughmxxeoy .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#eughmxxeoy .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#eughmxxeoy .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#eughmxxeoy .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#eughmxxeoy .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#eughmxxeoy .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#eughmxxeoy .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#eughmxxeoy .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#eughmxxeoy .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eughmxxeoy .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#eughmxxeoy .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#eughmxxeoy .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#eughmxxeoy .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eughmxxeoy .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#eughmxxeoy .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eughmxxeoy .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#eughmxxeoy .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eughmxxeoy .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#eughmxxeoy .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eughmxxeoy .gt_left {
+  text-align: left;
+}
+
+#eughmxxeoy .gt_center {
+  text-align: center;
+}
+
+#eughmxxeoy .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#eughmxxeoy .gt_font_normal {
+  font-weight: normal;
+}
+
+#eughmxxeoy .gt_font_bold {
+  font-weight: bold;
+}
+
+#eughmxxeoy .gt_font_italic {
+  font-style: italic;
+}
+
+#eughmxxeoy .gt_super {
+  font-size: 65%;
+}
+
+#eughmxxeoy .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#eughmxxeoy .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#eughmxxeoy .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#eughmxxeoy .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#eughmxxeoy .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#eughmxxeoy .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#eughmxxeoy .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <caption><span id="tab:unnamed-chunk-68">Table 7.2: </span><em>Macrochloa tenacissima</em></caption>
+  <thead>
+    
+    <tr class="gt_col_headings gt_spanner_row">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="6" scope="colgroup" id="&lt;strong&gt;Ot&lt;/strong&gt;">
+        <span class="gt_column_spanner"><strong>Ot</strong></span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="&lt;strong&gt;Pr&lt;/strong&gt;">
+        <span class="gt_column_spanner"><strong>Pr</strong></span>
+      </th>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;-1&lt;/strong&gt;, N = 11&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>-1</strong>, N = 11<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;5&lt;/strong&gt;, N = 9&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>5</strong>, N = 9<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;12&lt;/strong&gt;, N = 10&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>12</strong>, N = 10<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;17&lt;/strong&gt;, N = 10&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>17</strong>, N = 10<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;22&lt;/strong&gt;, N = 10&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>22</strong>, N = 10<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;29&lt;/strong&gt;, N = 10&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>29</strong>, N = 10<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;-1&lt;/strong&gt;, N = 12&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>-1</strong>, N = 12<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;7&lt;/strong&gt;, N = 10&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>7</strong>, N = 10<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;12&lt;/strong&gt;, N = 11&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>12</strong>, N = 11<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;18&lt;/strong&gt;, N = 13&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>18</strong>, N = 13<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;24&lt;/strong&gt;, N = 12&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>24</strong>, N = 12<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="label" class="gt_row gt_left">cob_total</td>
+<td headers="stat_1_1" class="gt_row gt_center">62.37 ± 12.17</td>
+<td headers="stat_2_1" class="gt_row gt_center">8.28 ± 3.09</td>
+<td headers="stat_3_1" class="gt_row gt_center">13.50 ± 3.68</td>
+<td headers="stat_4_1" class="gt_row gt_center">21.60 ± 7.50</td>
+<td headers="stat_5_1" class="gt_row gt_center">24.93 ± 7.93</td>
+<td headers="stat_6_1" class="gt_row gt_center">27.72 ± 8.75</td>
+<td headers="stat_1_2" class="gt_row gt_center">59.17 ± 10.81</td>
+<td headers="stat_2_2" class="gt_row gt_center">17.93 ± 4.59</td>
+<td headers="stat_3_2" class="gt_row gt_center">26.28 ± 5.77</td>
+<td headers="stat_4_2" class="gt_row gt_center">25.25 ± 6.11</td>
+<td headers="stat_5_2" class="gt_row gt_center">37.34 ± 8.06</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">fitovol</td>
+<td headers="stat_1_1" class="gt_row gt_center">4,811.34 ± 991.38</td>
+<td headers="stat_2_1" class="gt_row gt_center">238.56 ± 125.84</td>
+<td headers="stat_3_1" class="gt_row gt_center">468.60 ± 181.18</td>
+<td headers="stat_4_1" class="gt_row gt_center">921.65 ± 414.61</td>
+<td headers="stat_5_1" class="gt_row gt_center">979.45 ± 347.58</td>
+<td headers="stat_6_1" class="gt_row gt_center">1,389.46 ± 557.97</td>
+<td headers="stat_1_2" class="gt_row gt_center">5,347.08 ± 1,112.59</td>
+<td headers="stat_2_2" class="gt_row gt_center">492.69 ± 139.59</td>
+<td headers="stat_3_2" class="gt_row gt_center">733.13 ± 164.78</td>
+<td headers="stat_4_2" class="gt_row gt_center">904.74 ± 229.29</td>
+<td headers="stat_5_2" class="gt_row gt_center">2,020.42 ± 501.25</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="12"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Mean ± std.error</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<div id="esscirxjxv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#esscirxjxv table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#esscirxjxv thead, #esscirxjxv tbody, #esscirxjxv tfoot, #esscirxjxv tr, #esscirxjxv td, #esscirxjxv th {
+  border-style: none;
+}
+
+#esscirxjxv p {
+  margin: 0;
+  padding: 0;
+}
+
+#esscirxjxv .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#esscirxjxv .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#esscirxjxv .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#esscirxjxv .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#esscirxjxv .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#esscirxjxv .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#esscirxjxv .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#esscirxjxv .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#esscirxjxv .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#esscirxjxv .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#esscirxjxv .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#esscirxjxv .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#esscirxjxv .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#esscirxjxv .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#esscirxjxv .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#esscirxjxv .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#esscirxjxv .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#esscirxjxv .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#esscirxjxv .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#esscirxjxv .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#esscirxjxv .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#esscirxjxv .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#esscirxjxv .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#esscirxjxv .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#esscirxjxv .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#esscirxjxv .gt_left {
+  text-align: left;
+}
+
+#esscirxjxv .gt_center {
+  text-align: center;
+}
+
+#esscirxjxv .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#esscirxjxv .gt_font_normal {
+  font-weight: normal;
+}
+
+#esscirxjxv .gt_font_bold {
+  font-weight: bold;
+}
+
+#esscirxjxv .gt_font_italic {
+  font-style: italic;
+}
+
+#esscirxjxv .gt_super {
+  font-size: 65%;
+}
+
+#esscirxjxv .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#esscirxjxv .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#esscirxjxv .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#esscirxjxv .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#esscirxjxv .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#esscirxjxv .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#esscirxjxv .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <caption><span id="tab:unnamed-chunk-69">Table 7.3: </span><em>Genista scorpius</em></caption>
+  <thead>
+    
+    <tr class="gt_col_headings gt_spanner_row">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="6" scope="colgroup" id="&lt;strong&gt;Ot&lt;/strong&gt;">
+        <span class="gt_column_spanner"><strong>Ot</strong></span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="5" scope="colgroup" id="&lt;strong&gt;Pr&lt;/strong&gt;">
+        <span class="gt_column_spanner"><strong>Pr</strong></span>
+      </th>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;-1&lt;/strong&gt;, N = 10&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>-1</strong>, N = 10<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;5&lt;/strong&gt;, N = 11&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>5</strong>, N = 11<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;12&lt;/strong&gt;, N = 11&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>12</strong>, N = 11<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;17&lt;/strong&gt;, N = 13&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>17</strong>, N = 13<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;22&lt;/strong&gt;, N = 14&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>22</strong>, N = 14<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;29&lt;/strong&gt;, N = 14&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>29</strong>, N = 14<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;-1&lt;/strong&gt;, N = 11&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>-1</strong>, N = 11<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;7&lt;/strong&gt;, N = 12&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>7</strong>, N = 12<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;12&lt;/strong&gt;, N = 12&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>12</strong>, N = 12<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;18&lt;/strong&gt;, N = 11&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>18</strong>, N = 11<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;24&lt;/strong&gt;, N = 12&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>24</strong>, N = 12<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="label" class="gt_row gt_left">cob_total</td>
+<td headers="stat_1_1" class="gt_row gt_center">53.20 ± 9.21</td>
+<td headers="stat_2_1" class="gt_row gt_center">2.75 ± 0.76</td>
+<td headers="stat_3_1" class="gt_row gt_center">5.93 ± 1.65</td>
+<td headers="stat_4_1" class="gt_row gt_center">11.36 ± 3.83</td>
+<td headers="stat_5_1" class="gt_row gt_center">8.79 ± 3.04</td>
+<td headers="stat_6_1" class="gt_row gt_center">13.26 ± 4.16</td>
+<td headers="stat_1_2" class="gt_row gt_center">41.27 ± 8.54</td>
+<td headers="stat_2_2" class="gt_row gt_center">1.95 ± 1.30</td>
+<td headers="stat_3_2" class="gt_row gt_center">1.73 ± 0.57</td>
+<td headers="stat_4_2" class="gt_row gt_center">2.63 ± 0.78</td>
+<td headers="stat_5_2" class="gt_row gt_center">4.24 ± 1.54</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">fitovol</td>
+<td headers="stat_1_1" class="gt_row gt_center">3,560.00 ± 650.98</td>
+<td headers="stat_2_1" class="gt_row gt_center">19.41 ± 6.53</td>
+<td headers="stat_3_1" class="gt_row gt_center">190.33 ± 61.81</td>
+<td headers="stat_4_1" class="gt_row gt_center">263.38 ± 119.28</td>
+<td headers="stat_5_1" class="gt_row gt_center">240.46 ± 107.63</td>
+<td headers="stat_6_1" class="gt_row gt_center">332.91 ± 174.09</td>
+<td headers="stat_1_2" class="gt_row gt_center">3,184.45 ± 648.48</td>
+<td headers="stat_2_2" class="gt_row gt_center">36.51 ± 33.09</td>
+<td headers="stat_3_2" class="gt_row gt_center">13.77 ± 5.74</td>
+<td headers="stat_4_2" class="gt_row gt_center">32.35 ± 12.24</td>
+<td headers="stat_5_2" class="gt_row gt_center">67.89 ± 29.23</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="12"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Mean ± std.error</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre><code>R version 4.2.1 (2022-06-23)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Monterey 12.3.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] emmeans_1.8.1-1    plotrix_3.8-2      gtsummary_1.7.0    patchwork_1.1.2   
+ [5] performance_0.10.3 broom_1.0.1        tidymv_3.3.2       kableExtra_1.3.4  
+ [9] itsadug_2.4.1      plotfunctions_1.4  gratia_0.8.1       mgcv_1.8-42       
+[13] nlme_3.1-157       janitor_2.1.0      here_1.0.1         forcats_0.5.2     
+[17] stringr_1.4.1      dplyr_1.1.1        purrr_1.0.1        readr_2.1.3       
+[21] tidyr_1.2.1        tibble_3.2.1       ggplot2_3.4.2      tidyverse_1.3.2   
+[25] workflowr_1.7.0   
+
+loaded via a namespace (and not attached):
+  [1] readxl_1.4.2            backports_1.4.1         systemfonts_1.0.4      
+  [4] plyr_1.8.7              splines_4.2.1           digest_0.6.31          
+  [7] htmltools_0.5.4         lmerTest_3.1-3          fansi_1.0.3            
+ [10] magrittr_2.0.3          paletteer_1.5.0         googlesheets4_1.0.1    
+ [13] tzdb_0.3.0              modelr_0.1.9            svglite_2.1.0          
+ [16] timechange_0.2.0        colorspace_2.0-3        ggrepel_0.9.3          
+ [19] rvest_1.0.3             haven_2.5.1             xfun_0.35              
+ [22] prismatic_1.1.1         callr_3.7.3             crayon_1.5.2           
+ [25] jsonlite_1.8.4          lme4_1.1-30             zeallot_0.1.0          
+ [28] glue_1.6.2              gtable_0.3.1            gargle_1.2.1           
+ [31] MatrixModels_0.5-1      webshot_0.5.4           statsExpressions_1.5.0 
+ [34] car_3.1-0               abind_1.4-5             scales_1.2.1           
+ [37] mvtnorm_1.1-3           DBI_1.1.3               rstatix_0.7.0          
+ [40] Rcpp_1.0.9              viridisLite_0.4.1       xtable_1.8-4           
+ [43] tweedie_2.3.5           datawizard_0.7.1        httr_1.4.4             
+ [46] RColorBrewer_1.1-3      ellipsis_0.3.2          pkgconfig_2.0.3        
+ [49] farver_2.1.1            sass_0.4.5              dbplyr_2.2.1           
+ [52] utf8_1.2.2              effectsize_0.8.3        reshape2_1.4.4         
+ [55] tidyselect_1.2.0        labeling_0.4.2          rlang_1.1.0            
+ [58] later_1.3.0             munsell_0.5.0           cellranger_1.1.0       
+ [61] tools_4.2.1             cachem_1.0.6            cli_3.6.0              
+ [64] generics_0.1.3          evaluate_0.18           fastmap_1.1.0          
+ [67] yaml_2.3.7              rematch2_2.1.2          processx_3.7.0         
+ [70] knitr_1.41              fs_1.6.1                randomForest_4.7-1.1   
+ [73] pbapply_1.6-0           whisker_0.4             mvnfast_0.2.8          
+ [76] xml2_1.3.3              correlation_0.8.4       compiler_4.2.1         
+ [79] rstudioapi_0.14         ggsignif_0.6.3          gt_0.9.0               
+ [82] reprex_2.0.2            broom.helpers_1.13.0    afex_1.2-0             
+ [85] bslib_0.4.2             stringi_1.7.8           highr_0.9              
+ [88] ps_1.7.1                parameters_0.20.3       lattice_0.20-45        
+ [91] Matrix_1.5-1            commonmark_1.8.1        markdown_1.5           
+ [94] nloptr_2.0.3            vctrs_0.6.1             pillar_1.8.1           
+ [97] lifecycle_1.0.3         jquerylib_0.1.4         estimability_1.4.1     
+[100] insight_0.19.1          httpuv_1.6.8            R6_2.5.1               
+[103] bookdown_0.30           promises_1.2.0.1        BayesFactor_0.9.12-4.4 
+[106] boot_1.3-28             MASS_7.3-58.3           assertthat_0.2.1       
+[109] rprojroot_2.0.3         withr_2.5.0             parallel_4.2.1         
+[112] bayestestR_0.13.0       hms_1.1.2               grid_4.2.1             
+[115] coda_0.19-4             minqa_1.2.4             rmarkdown_2.18         
+[118] snakecase_0.11.0        carData_3.0-5           googledrive_2.0.0      
+[121] git2r_0.30.1            ggpubr_0.4.0            getPass_0.2-2          
+[124] numDeriv_2016.8-1.1     lubridate_1.9.2         ggstatsplot_0.11.0.9000</code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
