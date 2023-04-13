@@ -1,0 +1,950 @@
+---
+title: "Comparison fire epoch (Congreso Pastos 2023)"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, 
+                      warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+```{r pkg}
+library(tidyverse)
+library(here)
+library(janitor)
+library(mgcv)
+library(gratia)
+library(itsadug)
+library(kableExtra)
+library(tidymv)
+library(broom)
+library(performance)
+library(patchwork)
+library(gtsummary)
+library(plotrix)
+```
+
+- Read data 
+
+```{r read-data, echo=TRUE}
+veg_raw <- readxl::read_excel(here::here("data/datos_sep2023_todos_juntos.xlsx")) |> 
+  janitor::clean_names() 
+
+autumn_fire <- lubridate::ymd("2018-12-18")
+spring_fire <- lubridate::ymd("2019-05-07")
+
+veg <- veg_raw |> 
+  filter(zona != "Quemado sin pastoreo") |> 
+  rename(fecha = fecha_muestreos) |> 
+  mutate(treat = as.factor(case_when(
+    zona == "Quemado con pastoreo" ~ "Ot", 
+    TRUE ~ "Pr"
+  ))) |> 
+  mutate(meses = ifelse(treat == "Ot",
+                        as.numeric(as.character(lubridate::interval(autumn_fire, lubridate::ymd(fecha)) %/% months(1))),
+                        as.numeric(as.character(lubridate::interval(spring_fire, lubridate::ymd(fecha)) %/% months(1))))) |> 
+  mutate(quadrat = as.factor(quadrat)) |> 
+  mutate(meses = case_when(
+    meses == 0 ~ -1, 
+    TRUE ~ meses
+  ))
+
+veg_total <- veg |> filter(tipo == "total")
+veg_mt <- veg |> filter(tipo == "Macrochloa tenacissima") 
+veg_gs <- veg |> filter(tipo == "Genista scorpius") 
+
+# Subset of data (pre/post) 
+ad_total <- veg_total |> filter(meses %in% c(-1, 22, 24)) 
+ad_mt <-  veg_mt |> filter(meses %in% c(-1, 22, 24)) 
+ad_gs <- veg_gs |> filter(meses %in% c(-1, 22, 24))
+```
+
+
+```{r auxR}
+# Modify the itsadug::gamtab, to export as data.frame
+gamtab2 <- function (model, caption = " ", label = "tab.gam", pnames = NA, 
+    snames = NA, ptab = NA, stab = NA, ...) 
+{
+    if (!requireNamespace("xtable", quietly = TRUE)) {
+        stop("Package 'xtable' needed for this function to work. Please install it.", 
+            call. = FALSE)
+    }
+    sum.gam <- model
+    if (!inherits(model, "summary.gam")) {
+        sum.gam <- summary(model)
+    }
+    if (is.na(ptab[1])) {
+        ptab = as.data.frame(sum.gam$p.table, stringsAsFactors = FALSE)
+    }
+    if (is.na(stab[1])) {
+        stab = as.data.frame(sum.gam$s.table, stringsAsFactors = FALSE)
+    }
+    if (!is.na(pnames[1])) {
+        rownames(ptab) = pnames
+    }
+    if (!is.na(snames[1])) {
+        rownames(stab) = snames
+    }
+    colnames(ptab)[4] = "p-value"
+    colnames(ptab)[3] = "t-value"
+    ptab.cnames = colnames(ptab)
+    stab.cnames = colnames(stab)
+    stab.cnames[3] = "F-value"
+    colnames(ptab) = c("A", "B", "C", "D")
+    if (ncol(stab) != 0) {
+        colnames(stab) = colnames(ptab)
+    }
+    tab = rbind(ptab, stab)
+    colnames(tab) = ptab.cnames
+    tab = round(tab, 4)
+    m = data.frame(matrix(0, nrow(tab), ncol(tab)), stringsAsFactors = FALSE)
+    for (i in 1:nrow(tab)) {
+        for (j in 1:4) {
+            if ((j == 4) & (tab[i, j] < 1e-04)) {
+                m[i, j] = "< 0.0001"
+            }
+            else {
+                m[i, j] = sprintf("%3.4f", tab[i, j])
+            }
+        }
+    }
+    colnames(m) = colnames(tab)
+    rownames(m) = rownames(tab)
+    tab = m
+    tab2 = rbind(c(ptab.cnames), tab[1:nrow(ptab), ])
+    if (nrow(stab) > 0) {
+        tab2 = rbind(tab2, c(stab.cnames), tab[(nrow(ptab) + 
+            1):nrow(tab), ])
+    }
+    if (nrow(stab)) {
+        rownames(tab2)[(nrow(ptab) + 2)] = "B. smooth terms"
+    }
+    rownames(tab2)[1] = "A. parametric coefficients"
+    for (i in 1:nrow(tab2)) {
+        if (tab2[i, 4] == "0") 
+            tab2[i, 4] = "< 0.0001"
+        if (length(grep("\\.", tab2[i, 2])) == 0) 
+            tab2[i, 2] = paste(tab2[i, 2], ".0000", sep = "")
+    }
+
+return(as.data.frame(tab2))
+}
+
+
+
+gamR2 <- function(gam) {
+  # see https://www.researchgate.net/post/How-can-I-get-the-adjusted-r-squared-value-of-GAM-model
+  R2 <- 1 - ((sum(residuals(gam)^2)) /
+    (sum((gam$y - mean(gam$y))^2)))
+  R2adj <- 1 - ((1 - R2) * (length(gam$y) - 1) /
+    (length(gam$y) - length(gam$coefficients) - 1))
+  a <- data.frame(R2, R2adj)
+  return(a)
+}
+
+
+library(emmeans)
+tabla_postHoc <- function(modelo){
+  posthoc <- emmeans(modelo, ~ meses * treat)
+  contrast(posthoc, "consec", simple = "each", combine = TRUE,
+           adjust = "tukey") |> 
+  kbl(digits = 4) |> 
+    kable_paper("hover", full_width = F)
+}
+
+
+colores <- c("#543005", "#01665e") 
+
+```
+
+# All sps 
+## Total Cover 
+### Model
+```{r, echo=TRUE}
+f <- as.formula(cob_total ~ s(meses, k=5, bs="cs") + treat)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg_total, 
+          family = nb)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.rec_tot <- 
+  performance(m$gam) |> as.data.frame() |> mutate(dist = "Negative Binomial")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) |> 
+  kbl(col.names = NULL) |> 
+  kable_paper(full_width = F) |>
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.rec_tot_all <- broom::tidy(m$gam) |> mutate(var = "Total cover", 
+                                                   tipo = "All species") 
+param.rec_tot_all <- broom::tidy(m$gam, parametric = TRUE) |> mutate(var = "Total cover", 
+                                                                     tipo = "All species")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+plot.rec_total <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Recubrimiento total (%)") + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="black") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg_total, 
+             aes(x=meses, y=cob_total, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) 
+
+
+inset.rec_tot <- ggpubr::ggboxplot(ad_total, x="meses", y="cob_total", fill = "treat", palette = colores, ylab="") +
+  theme(legend.position = "none",
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        plot.background = element_rect(fill = "transparent",colour = NA),
+        text = element_text(size = 10))
+```
+
+```{r plot_rectot, dev = c('png','jpeg','tiff')}
+plot.rec_total + inset_element(inset.rec_tot,
+                         0.4, 0.5, 1,.95)
+```
+
+### Pre-post (autumn)
+```{r}
+ggstatsplot::grouped_ggwithinstats(
+  ad_total, 
+  x=meses,
+  y=cob_total, 
+  grouping.var = treat,
+  pairwise.display = "significant",
+  point.path = FALSE,
+  type = "parametric"
+)
+```
+
+```{r}
+maov <- aov(cob_total~meses*treat, data = ad_total)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) |> 
+  kbl(digits = c(0, 0, 2,2,2,4)) |> 
+  kable_styling()
+```
+
+## Phytovol
+### Model
+```{r, echo=TRUE}
+f <- as.formula(fitovol ~ s(meses, k=5, bs="cs") + treat)
+m <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg_total, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.fitovol1 <- 
+  performance(m$gam) |> as.data.frame() |> mutate(dist = "Tweedie")
+```
+
+
+### Model validation
+
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) |> 
+  kbl(col.names = NULL) |> 
+  kable_paper(full_width = F) |>
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.fitovol1_all <- broom::tidy(m$gam) |> mutate(var = "Fitovol", tipo = "All species")
+param.fitovol1_all <- broom::tidy(m$gam, parametric = TRUE) |> mutate(var = "Fitovol", tipo = "All species")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+plot.fitovol <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat,
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab(expression(Fitovolumen~(m^3~ha^{-1}))) + 
+  xlab("Tiempo (meses tras la quema)") +  
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="black") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg_total, 
+             aes(x=meses, y=fitovol, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) 
+
+inset.fitovol <- ggpubr::ggboxplot(ad_total, x="meses", y="fitovol", fill = "treat", palette = colores, ylab="") + 
+  theme(legend.position = "none", 
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        plot.background = element_rect(fill = "transparent",colour = NA),
+        text = element_text(size = 10))
+
+```
+
+```{r plot_fitovol, dev = c('png','jpeg','tiff')}
+plot.fitovol + inset_element(inset.fitovol, 0.4, 0.4, .95,.95)
+```
+
+### Pre-post (autumn)
+```{r}
+ggstatsplot::grouped_ggwithinstats(
+  ad_total, 
+  x=meses,
+  y=fitovol, 
+  grouping.var = treat,
+  pairwise.display = "significant",
+  point.path = FALSE,
+  type = "parametric"
+)
+```
+
+```{r}
+maov <- aov(fitovol~meses*treat, data = ad_total)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) |> 
+  kbl(digits = c(0, 0, 2,2,2,4)) |> 
+  kable_styling()
+```
+
+
+# Macrochloa tenacissima
+## Total Cover 
+### Model
+```{r, echo=TRUE}
+f <- as.formula(cob_total ~ s(meses, k=5, bs="cs") + treat)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg_mt, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.rec_tot <- 
+  performance(m$gam) |> as.data.frame() |> mutate(dist = "Tweedie")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) |> 
+  kbl(col.names = NULL) |> 
+  kable_paper(full_width = F) |>
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.rec_tot_mt <- broom::tidy(m$gam) |> mutate(var = "Total cover", tipo = "Macrochloa tenacissima")
+param.rec_tot_mt <- broom::tidy(m$gam, parametric = TRUE) |> mutate(var = "Total cover", tipo = "Macrochloa tenacissima")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+plot.rec_total_mt <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Recubrimiento total (%)") + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="black") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg_mt, 
+             aes(x=meses, y=cob_total, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) +
+  ggtitle("Macrochloa tenacissima")
+
+
+
+inset.rec_tot_mt <- ggpubr::ggboxplot(ad_mt, x="meses", y="cob_total", fill = "treat", palette = colores, ylab="") +
+  theme(legend.position = "none",
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        plot.background = element_rect(fill = "transparent",colour = NA),
+        text = element_text(size = 10))
+```
+
+```{r plot_rectot_mt, dev = c('png','jpeg','tiff')}
+plot.rec_total_mt + inset_element(inset.rec_tot_mt,
+                         0.4, 0.5, 1,.95)
+```
+
+### Pre-post (autumn)
+```{r}
+ggstatsplot::grouped_ggwithinstats(
+  ad_mt, 
+  x=meses,
+  y=cob_total, 
+  grouping.var = treat,
+  pairwise.display = "significant",
+  point.path = FALSE,
+  type = "parametric"
+)
+```
+
+```{r}
+maov <- aov(cob_total~meses*treat, data = ad_mt)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) |> 
+  kbl(digits = c(0, 0, 2,2,2,4)) |> 
+  kable_styling()
+```
+
+## Phytovol
+### Model
+```{r, echo=TRUE}
+f <- as.formula(fitovol ~ s(meses, k=5, bs="cs") + treat)
+m <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg_mt, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.fitovol1 <- 
+  performance(m$gam) |> as.data.frame() |> mutate(dist = "Tweedie")
+```
+
+### Model validation
+
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) |> 
+  kbl(col.names = NULL) |> 
+  kable_paper(full_width = F) |>
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.fitovol1_mt <- broom::tidy(m$gam) |> mutate(var = "Fitovol", tipo = "Macrochloa tenacissima")
+param.fitovol1_mt <- broom::tidy(m$gam, parametric = TRUE) |> mutate(var = "Fitovol", tipo = "Macrochloa tenacissima")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+plot.fitovol_mt <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat,
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab(expression(Fitovolumen~(m^3~ha^{-1}))) + 
+  xlab("Tiempo (meses tras la quema)") +  
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="black") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg_mt, 
+             aes(x=meses, y=fitovol, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) +
+  ggtitle("Macrochloa tenacissima")
+
+inset.fitovol_mt <- ggpubr::ggboxplot(ad_mt, x="meses", y="fitovol", fill = "treat", palette = colores, ylab="") + 
+  theme(legend.position = "none", 
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        plot.background = element_rect(fill = "transparent",colour = NA),
+        text = element_text(size = 10))
+
+```
+
+```{r plot_fitovol_mt, dev = c('png','jpeg','tiff')}
+plot.fitovol_mt + inset_element(inset.fitovol_mt, 0.4, 0.4, .95,.95)
+```
+
+### Pre-post (autumn)
+```{r}
+ggstatsplot::grouped_ggwithinstats(
+  ad_total, 
+  x=meses,
+  y=fitovol, 
+  grouping.var = treat,
+  pairwise.display = "significant",
+  point.path = FALSE,
+  type = "parametric"
+)
+```
+
+```{r}
+maov <- aov(fitovol~meses*treat, data = ad_mt)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) |> 
+  kbl(digits = c(0, 0, 2,2,2,4)) |> 
+  kable_styling()
+```
+
+
+
+# Genista scorpius
+## Total Cover 
+### Model
+```{r, echo=TRUE}
+f <- as.formula(cob_total ~ s(meses, k=5, bs="cs") + treat)
+
+m <- gamm(f, 
+          random = list(quadrat = ~1), 
+          data = veg_gs, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.rec_tot <- 
+  performance(m$gam) |> as.data.frame() |> mutate(dist = "Tweedie")
+```
+
+### Model validation
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) |> 
+  kbl(col.names = NULL) |> 
+  kable_paper(full_width = F) |>
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.rec_tot_gs <- broom::tidy(m$gam) |> mutate(var = "Total cover", tipo = "Genista scorpius")
+param.rec_tot_gs <- broom::tidy(m$gam, parametric = TRUE) |> mutate(var = "Total cover", tipo = "Genista scorpius")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+plot.rec_total_gs <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat, 
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab("Recubrimiento total (%)") + 
+  xlab("Tiempo (meses tras la quema)") + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="black") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg_gs, 
+             aes(x=meses, y=cob_total, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) +
+  ggtitle("Genista scorpius")
+
+
+
+inset.rec_tot_gs <- ggpubr::ggboxplot(ad_gs, x="meses", y="cob_total", fill = "treat", palette = colores, ylab="") +
+  theme(legend.position = "none",
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        plot.background = element_rect(fill = "transparent",colour = NA),
+        text = element_text(size = 10))
+```
+
+```{r plot_rectot_gs, dev = c('png','jpeg','tiff')}
+plot.rec_total_gs + inset_element(inset.rec_tot_gs,
+                         0.4, 0.5, 1,.95)
+```
+
+### Pre-post (autumn)
+```{r}
+ggstatsplot::grouped_ggwithinstats(
+  ad_gs, 
+  x=meses,
+  y=cob_total, 
+  grouping.var = treat,
+  pairwise.display = "significant",
+  point.path = FALSE,
+  type = "parametric"
+)
+```
+
+```{r}
+maov <- aov(cob_total~meses*treat, data = ad_gs)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) |> 
+  kbl(digits = c(0, 0, 2,2,2,4)) |> 
+  kable_styling()
+```
+
+## Phytovol
+### Model
+```{r, echo=TRUE}
+f <- as.formula(fitovol ~ s(meses, k=5, bs="cs") + treat)
+m <- gamm(f,
+          random = list(quadrat = ~1), 
+          data = veg_gs, 
+          family = tw)
+```
+
+```{r}
+performance::check_distribution(m$gam)
+```
+
+```{r}
+performance.fitovol1 <- 
+  performance(m$gam) |> as.data.frame() |> mutate(dist = "Tweedie")
+```
+
+### Model validation
+
+```{r}
+appraise(m$gam, point_col = "steelblue", point_alpha = 0.4)
+```
+
+### Coefficients
+
+```{r}
+gamtab2(m$gam) |> 
+  kbl(col.names = NULL) |> 
+  kable_paper(full_width = F) |>
+  row_spec(c(1,4), bold = T)
+
+# Get parameters 
+smooth.fitovol1_gs <- broom::tidy(m$gam) |> mutate(var = "Fitovol", tipo = "Genista scorpius")
+param.fitovol1_gs <- broom::tidy(m$gam, parametric = TRUE) |> mutate(var = "Fitovol", tipo = "Genista scorpius")
+```
+
+### Visualizing effects
+```{r}
+gratia::draw(m$gam)
+```
+
+```{r}
+plot.fitovol_gs <- plot_smooths(
+  model = m$gam,
+  series = meses, 
+  comparison = treat,
+  transform = exp
+) +
+  scale_colour_manual(values = colores) +
+  scale_fill_manual(values = colores) +
+  ylab(expression(Fitovolumen~(m^3~ha^{-1}))) + 
+  xlab("Tiempo (meses tras la quema)") +  
+  theme_bw() + 
+  theme(legend.position = "top",
+        panel.grid = element_blank()) +
+  geom_vline(xintercept = 0.5, color="black") + 
+  geom_vline(xintercept = 
+               (lubridate::interval(autumn_fire) %/% months(1)),
+             linetype="dotted"
+             ) + 
+  geom_point(data = veg_gs, 
+             aes(x=meses, y=fitovol, colour=treat), 
+             alpha=.6, size=.8,
+             position = position_jitter(width = .4)) +
+  ggtitle("Genista scorpius")
+
+inset.fitovol_gs <- ggpubr::ggboxplot(ad_gs, x="meses", y="fitovol", fill = "treat", palette = colores, ylab="") + 
+  theme(legend.position = "none", 
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        plot.background = element_rect(fill = "transparent",colour = NA),
+        text = element_text(size = 10))
+
+```
+
+```{r plot_fitovol_gs, dev = c('png','jpeg','tiff')}
+plot.fitovol_gs + inset_element(inset.fitovol_gs, 0.4, 0.4, .95,.95)
+```
+
+### Pre-post (autumn)
+```{r}
+ggstatsplot::grouped_ggwithinstats(
+  ad_total, 
+  x=meses,
+  y=fitovol, 
+  grouping.var = treat,
+  pairwise.display = "significant",
+  point.path = FALSE,
+  type = "parametric"
+)
+```
+
+```{r}
+maov <- aov(fitovol~meses*treat, data = ad_gs)
+```
+
+```{r}
+options(knitr.kable.NA = '')
+broom::tidy(maov) |> 
+  kbl(digits = c(0, 0, 2,2,2,4)) |> 
+  kable_styling()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+# Summary 
+
+- Parametric terms 
+
+```{r}
+p.terms <- 
+  bind_rows(param.rec_tot_all,
+            param.fitovol1_all,
+            param.rec_tot_mt, 
+            param.fitovol1_mt,
+            param.rec_tot_gs, 
+            param.fitovol1_gs) |> 
+  relocate(tipo, var) |> 
+  mutate(
+    term = case_when(
+      term == "(Intercept)" ~ "treatOt", 
+      TRUE ~ term)
+    )
+```
+
+
+```{r}
+p.terms |> 
+  mutate(p = 
+           case_when(
+             p.value < 0.0001 ~ "< 0.0001",
+             TRUE ~ as.character(round(p.value,4))
+           )) |> 
+  dplyr::select(-p.value) |> 
+  kbl(col.names = 
+        c("Tipo", "Variable", "term", "Estimate", "SE", "F", "p"), 
+      align = c("ccrrrr"),
+      digits = c(0,0,0,3,3,2,4)) |> 
+  kable_paper(full_width = F) 
+```
+
+
+- Smooth terms
+```{r}
+s.terms <- 
+  bind_rows(smooth.rec_tot_all,
+            smooth.fitovol1_all,
+            smooth.rec_tot_mt, 
+            smooth.fitovol1_mt,
+            smooth.rec_tot_gs, 
+            smooth.fitovol1_gs) |> 
+  relocate(tipo, var) 
+```
+
+```{r}
+s.terms |> 
+  mutate(p = 
+           case_when(
+             p.value < 0.0001 ~ "< 0.0001",
+             TRUE ~ as.character(p.value)
+           )) |> 
+  dplyr::select(-p.value) |> 
+  kbl(col.names = 
+        c("tipo", "Variable", "term", "edf", "ref.df", "F", "p"), 
+      digits = c(0,0,0,3,3,2,4)) |> 
+  kable_paper(full_width = F) 
+```
+
+
+
+# All plots 
+
+```{r}
+library(patchwork)
+```
+
+```{r, fig.height=10}
+plot.rec_total + plot.fitovol + 
+  plot.rec_total_mt + plot.fitovol_mt +
+  plot.rec_total_gs + plot.fitovol_gs +
+  plot_layout(guides = "collect", nrow = 3) & theme(legend.position = "bottom")
+```
+
+
+# Summary table 
+
+```{r}
+veg_total |> 
+  dplyr::select(cob_total, fitovol, treat, meses) |> 
+ tbl_strata(
+    strata = treat, 
+    .tbl_fun = 
+      ~.x |> 
+      tbl_summary(
+        by = meses,
+        missing = "no",
+        # type = c(p) ~ "continuous",
+       # label = list(ab ~ "Juvenile abundance"),
+        statistic = all_continuous() ~ "{mean} ± {std.error}",
+        digits = everything() ~ 2
+      )) |> 
+    modify_caption("**All species**")
+```
+
+```{r}
+veg_mt |> 
+  dplyr::select(cob_total, fitovol, treat, meses) |> 
+ tbl_strata(
+    strata = treat, 
+    .tbl_fun = 
+      ~.x |> 
+      tbl_summary(
+        by = meses,
+        missing = "no",
+        # type = c(p) ~ "continuous",
+       # label = list(ab ~ "Juvenile abundance"),
+        statistic = all_continuous() ~ "{mean} ± {std.error}",
+        digits = everything() ~ 2
+      )) |> 
+  modify_caption("*Macrochloa tenacissima*")
+```
+
+
+```{r}
+veg_gs |> 
+  dplyr::select(cob_total, fitovol, treat, meses) |> 
+ tbl_strata(
+    strata = treat, 
+    .tbl_fun = 
+      ~.x |> 
+      tbl_summary(
+        by = meses,
+        missing = "no",
+        # type = c(p) ~ "continuous",
+       # label = list(ab ~ "Juvenile abundance"),
+        statistic = all_continuous() ~ "{mean} ± {std.error}",
+        digits = everything() ~ 2
+      )) |> 
+  modify_caption("*Genista scorpius*")
+```
+
+
+
+
+
