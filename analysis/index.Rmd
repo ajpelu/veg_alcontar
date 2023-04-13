@@ -18,4 +18,4 @@ editor_options:
 - [Comparison of vegetation methods](compara_methods.html)
 - [Analysis for "O2P Final Report" (Jan-2022)](modelos_anovas_informe_o2p.html)
 - [Comparison of vegetation methods (SUDOE)](compara_methods_SUDOE.html)
-
+- [Comparison of fire epoch ("Congreso Pastos")](temporal_analysis_fire_epoch.html)
