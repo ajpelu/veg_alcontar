@@ -14,8 +14,6 @@ knitr::opts_chunk$set(echo=FALSE,
                       warning=FALSE, message=FALSE)
 ```
 
-
-
 ```{r pkg}
 library(tidyverse)
 library(here)
@@ -49,7 +47,6 @@ library(partykit)
 # https://bcdudek.net/anova/index.html
 # http://www.alexanderdemos.org/ANOVA6.html
 ```
-
 
 ```{r read-data}
 fit_t <- readxl::read_excel(here::here("data/Datos_boxplot_metodos.xlsx"), 
@@ -117,6 +114,13 @@ div_tlonger <- div_t %>%
   mutate(variable = "diversidad", metodo = name)
 
 d <- bind_rows(cober, fit, riqdiv_q_longer, riq_tlonger, div_tlonger)
+
+d <- d %>% mutate(metodo = fct_recode(metodo, 
+                                      "Cuadrado" = "quadrat",
+                                      "Line intercept" = "line_intercept",
+                                      "Point quadrat" = "point_quadrat",
+                                      "Cuadrado parcela" = "quadrat_parcela"))
+
 
 ```
 
@@ -218,26 +222,26 @@ Vamos a realizar la comparación seleccionando para cada parcela (n=12) un valor
 # ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
 cob <- d %>% filter(variable == "Cobertura") %>% 
   mutate(metodo = fct_relevel(metodo, 
-                              c("quadrat","dronQ","line_intercept","point_quadrat", "dronT"))) 
+                              c("Cuadrado","dronQ","Line intercept","Point quadrat", "dronT"))) 
 ```
 
 
 ```{r}
 cob_qcorrected <- readxl::read_excel(here::here("data/Cobertura_fitovolumen_corregido_parcela.xlsx")) %>% janitor::clean_names() %>% 
   dplyr::select(parcela, value=cobertura_cor) %>% 
-  mutate(metodo = "quadrat media ponderada")
+  mutate(metodo = "Cuadrado media ponderada")
 ```
 
 ```{r}
 cob_doce <- 
   cob %>% 
- filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+ filter(metodo %in% c("dronT", "Line intercept", "Point quadrat")) %>% 
   dplyr::select(parcela, value, metodo) %>% 
   bind_rows((
     cob_q %>% 
   group_by(parcela) %>% 
   summarize(value = mean(plot)) %>% 
-  mutate(metodo = "quadrat medio"))) %>% 
+  mutate(metodo = "Cuadrado medio"))) %>% 
     bind_rows(cob_qcorrected)
   
 ```
@@ -246,7 +250,7 @@ cob_doce <-
 ### Summary values 
 ```{r cob-resumen}
 scob <- cob_doce %>% 
-  filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% 
+  filter(metodo %in% c("Line intercept","Point quadrat", "Cuadrado medio")) %>% 
   group_by(metodo) %>% 
   summarise(mean = mean(value, na.rm = TRUE), 
             sd = sd(value, na.rm = TRUE), 
@@ -268,10 +272,10 @@ scob %>% kable(digits = 2,
 
 ```{r cob-kw}
 kw_cob_doce <- cob_doce %>% 
-    filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% mutate(metodo = fct_relevel(metodo, 
-                              c("line_intercept",
-                                "point_quadrat", 
-                                "quadrat medio"))) %>% 
+    filter(metodo %in% c("Line intercept","Point quadrat", "Cuadrado medio")) %>% mutate(metodo = fct_relevel(metodo, 
+                              c("Line intercept",
+                                "Point quadrat", 
+                                "Cuadrado medio"))) %>% 
   rename(cobertura = value) %>% 
   comparaKW('cobertura', 'metodo', alpha_posthoc = 0.05)
 
@@ -296,25 +300,29 @@ kw_cob_doce$post_hoc %>%
 ```{r cob-violin, fig.cap="Comparación de los valores de cobertura entre los diferentes métodos de campo."}
 
 p <- cob_doce %>% 
-  filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio"))
+  filter(metodo %in% c("Line intercept","Point quadrat", "Cuadrado medio")) %>%
+  mutate(metodo = fct_recode(metodo, "Cuadrado" = "Cuadrado medio"))
 
+  
 set.seed(123)
-ggbetweenstats(p, 
+p1_cob <- ggbetweenstats(p, 
                x = metodo, 
                y= value, 
                type = "np",
                ylab = "Cobertura (%)", 
+               xlab = "Método",
                p.adjust.method = "bonferroni", 
                pairwise.display = "s", 
                centrality.label.args = list(size = 3, nudge_x = -0.4)) 
 
+p1_cob
 ```
 
 ### Correlación 
 El siguiente paso es evaluar la correlación que existe entre los métodos de campo para la cobertura. 
 
 ```{r}
-correla_pares <- function(df, vselected, xlab, ylab){ 
+correla_pares <- function(df, vselected, xlab, ylab, ...){ 
   
   dftemp <- df %>% 
     pivot_wider(names_from = metodo) %>% 
@@ -325,7 +333,7 @@ correla_pares <- function(df, vselected, xlab, ylab){
           add = "reg.line", conf.int = TRUE, 
           color = "name", shape = "name",
           xlab = xlab,
-          ylab = ylab) +  
+          ylab = ylab, ...) +  
   geom_abline(slope = 1) + 
   stat_cor(
     label.y.npc="top", label.x.npc = "left",
@@ -340,32 +348,47 @@ correla_pares <- function(df, vselected, xlab, ylab){
 
 Tal y como observamos en la Figura \@ref(fig:cob-correla), existe una correlación significativa del **line intercept** con el **point quadrat** ($R^2=$ 0.63), aunque lejos del ajuste perfecto (línea negra en Figura \@ref(fig:cob-correla)). El método **point quadrat** sobreestima los valores de cobertura con respecto al método de **line intercept**. Así, el rango de cobertura estimado por el LI varía entre 11.95-34 %, mientras que la estimación por PQ varía entre 41-64% (Tabla \@ref(tab:cob-resumen)). La correlación entre **quadrat medio** y **point quadrat** es muy baja (Figura \@ref(fig:cob-correlaQM-PQ)). 
 
-```{r cob-correla, fig.cap="Correlación entre los valores de cobertura estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat medio."}
-cob_doce %>% 
-  filter(metodo %in% c("line_intercept","point_quadrat", "quadrat medio")) %>% 
-  correla_pares("line_intercept", 
-                xlab = "Cobertura (%)", 
-                ylab = "Cobertura (%) Line Intercept") +
-  xlim(0,80) + ylim(0,80)+ 
-  scale_shape_manual(values = c(15,19), name = "") +
-  scale_colour_manual(values = c("black","red"), name = "") + 
-  scale_fill_manual(values = c("black","red"), name = "") 
+```{r}
+color_a <- "#023FA5" 
+color_b <- "#004B40"
+color_c <- "#533600"
 
+```
+
+
+```{r cob-correla, fig.cap="Correlación entre los valores de cobertura estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat medio."}
+c1_cob_a <- cob_doce %>% 
+  filter(metodo %in% c("Line intercept","Point quadrat", "Cuadrado medio")) %>% 
+  mutate(metodo = fct_recode(metodo, "Cuadrado" = "Cuadrado medio")) %>% 
+  correla_pares("Cuadrado", 
+                xlab = "Cobertura (%)", 
+                ylab = "Cobertura (%) \n Cuadrado") +
+  xlim(0,80) + ylim(0,80)+ 
+  scale_shape_manual(values = c(19,15), name = "") +
+  scale_colour_manual(values = c(color_b,color_c), name = "") + 
+  scale_fill_manual(values = c(color_b,color_c), name = "") +
+  theme(panel.margin = unit(c(0, 0, 0, 0), "cm"))  
+
+c1_cob_a
 ```
 
 #### Correlación Quadrat medio - Point Quadrat 
 
+
 ```{r cob-correlaQM-PQ, fig.cap="Correlación entre los valores de cobertura estimados por Quadrat medio y Point Quadrat."}
-cob_doce %>% 
-  filter(metodo %in% c("point_quadrat", "quadrat medio")) %>% 
-  correla_pares("quadrat medio", 
-                xlab = "Cobertura (%) Point Quadrat", 
-                ylab = "Cobertura (%) Quadrat medio") +
+c1_cob_b <- cob_doce %>% 
+  filter(metodo %in% c("Point quadrat", "Line intercept")) %>% 
+  correla_pares("Line intercept", 
+                xlab = "Cobertura (%)\n Point Quadrat", 
+                ylab = "Cobertura (%)\n Line intercept") +
   xlim(0,80) + ylim(0,80) + 
-  scale_shape_manual(values = 15, name = "") +
-  scale_colour_manual(values = "black", name = "") + 
-  scale_fill_manual(values = "black", name = "") +
-  theme(legend.position = "none")
+  scale_shape_manual(values = 17, name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "") +
+  theme(legend.position = "none", 
+        panel.margin = unit(c(0, 0, 0, 0), "cm"))
+
+c1_cob_b 
 ```
 
 
@@ -376,27 +399,27 @@ cob_doce %>%
 # ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
 fit <- d %>% filter(variable == "Fitovolumen") %>% 
   mutate(metodo = fct_relevel(metodo, 
-                              c("quadrat","dronQ","line_intercept","dronT"))) 
+                              c("Cuadrado","dronQ","Line intercept","dronT"))) 
 ```
 
 
 ```{r}
 fit_doce <- 
   fit %>% 
- filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+ filter(metodo %in% c("dronT", "Line intercept", "Point quadrat")) %>% 
   dplyr::select(parcela, value, metodo) %>% 
   bind_rows((
     fit_q %>% 
   group_by(parcela) %>% 
   summarize(value = mean(plot)) %>% 
-  mutate(metodo = "quadrat medio")))
+  mutate(metodo = "Cuadrado medio")))
   
 ```
 
 ### Summary values 
 ```{r fit-resumen}
 scob <- fit_doce %>% 
-  filter(metodo %in% c("line_intercept","quadrat medio")) %>% 
+  filter(metodo %in% c("Line intercept","Cuadrado medio")) %>% 
   group_by(metodo) %>% 
   summarise(mean = mean(value, na.rm = TRUE), 
             sd = sd(value, na.rm = TRUE), 
@@ -415,7 +438,9 @@ scob %>% kable(digits = 2,
 ### Comparación de métodos 
 
 ```{r}
-fit_selected <- fit_doce %>% filter(metodo %in% c("line_intercept","quadrat medio")) 
+fit_selected <- fit_doce %>% 
+  filter(metodo %in% c("Line intercept","Cuadrado medio")) %>% 
+  mutate(metodo = fct_recode(metodo, "Cuadrado" = "Cuadrado medio"))  
 ```
 
 
@@ -430,7 +455,7 @@ b <- bartlett.test(fit_selected$value, fit_selected$metodo, data=fit_selected)
 Hemos comprobado Normalidad (`r paste0("W = ",round(s$statistic,2),  "; ",  scales::pvalue(s$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`);  y homocedasticidad (`r paste0("Bartlett's K-squared = ", round(b$statistic, 2),"; ", scales::pvalue(b$p.value, accuracy = 0.0001, decimal.mark = ".", add_p = TRUE))`) y se puede aplicar un método paramétrico, en este caso, la t-student de comparación de medias. Observamos que existen diferencias (Figura \@ref(fig:fit-violin)): 
 
 ```{r }
-fit_t <- t.test(value ~ metodo, data = fit_selected)
+fit_t <- t.test(value ~ metodo, data = fit_selected, var.equal = TRUE)
 ```
 
 
@@ -441,12 +466,17 @@ report(fit_t)
 
 ```{r fit-violin, fig.cap="Comparación de los valores de fitovolumen entre Line Intercept y Quadrat medio."}
 
+
 set.seed(123)
-ggbetweenstats(fit_selected, 
+p1_fit <- ggbetweenstats(fit_selected, 
                x = metodo, 
                y= value, 
                type = "p",
-               ylab=expression(Fitovolumen~(m^3~ha^{-1}))) 
+               xlab = "Método",
+               var.equal = TRUE,
+               ylab=expression(bold(Fitovolumen~(m^3~ha^{-1})))) 
+
+p1_fit
 ```
 
 ### Correlación 
@@ -454,15 +484,20 @@ No existe una buena correlación entre los valores de fitovolumen estimados con 
 
 ```{r fit-correla, fig.cap="Correlación entre los valores de fitovolumen estimados por Line Intercept y Quadrat medio."}
 
-fit_selected %>% 
-  correla_pares("line_intercept", 
-                ylab = expression(Fitovolumen~Line~Intercept~(m^3~ha^{-1})), 
-                xlab = expression(Fitovolumen~Quadrat~medio~(m^3~ha^{-1}))) +
+c1_fit <- fit_selected %>% 
+  correla_pares("Cuadrado", 
+                xlab = expression(atop(paste("Fitovolumen (", m^3~ha^{-1}, ")"),
+                     "Line Intercept")),
+                ylab = expression(atop(paste("Fitovolumen (", m^3~ha^{-1}, ")"),
+                     "Cuadrado"))) +
   xlim(0,1500) + ylim(0,1500) + 
   theme(legend.position = "none") + 
-  scale_shape_manual(values = 19, name = "") +
-  scale_colour_manual(values = "black", name = "") + 
-  scale_fill_manual(values = "black", name = "") 
+  scale_shape_manual(values = 17, name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "")
+
+c1_fit 
+
 ```
 
 
@@ -474,11 +509,13 @@ Comparamos entre line intercept, quadrat parcela y point quadrat.
 
 ```{r}
 # ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
-riq <- d %>% filter(variable == "riqueza") %>% 
-  mutate(metodo = fct_relevel(metodo, 
-                              c("quadrat","line_intercept","point_quadrat","point_quadrat_extenso","quadrat_parcela"))) 
+riq <- d %>% 
+  filter(variable == "riqueza") %>% 
+  mutate(metodo = 
+           fct_relevel(metodo, 
+                              c("Line intercept","Point quadrat","Cuadrado","point_quadrat_extenso","Cuadrado parcela"))) 
 
-riq_selected <- riq %>% filter(metodo %in% c("line_intercept","point_quadrat","quadrat_parcela")) 
+riq_selected <- riq %>% filter(metodo %in% c("Line intercept","Point quadrat","Cuadrado parcela")) 
 ```
 
 
@@ -513,9 +550,9 @@ check_normality(aov_riq)
 ```{r riq-kw}
 kw_riq <- riq_selected %>% 
   mutate(metodo = fct_relevel(metodo, 
-                              c("line_intercept",
-                                "point_quadrat", 
-                                "quadrat_parcela"))) %>% 
+                              c("Line intercept",
+                                "Point quadrat", 
+                                "Cuadrado parcela"))) %>% 
   rename(riqueza = value) %>% 
   comparaKW('riqueza', 'metodo', alpha_posthoc = 0.05)
 
@@ -540,15 +577,19 @@ kw_riq$post_hoc %>%
 
 ```{r riq-violin, fig.cap="Comparación de los valores de riqueza entre los diferentes métodos de campo."}
 
+riq_selected <- riq_selected %>% 
+  mutate(metodo = fct_recode(metodo, "Cuadrado" = "Cuadrado parcela"))
+
 set.seed(123)
-ggbetweenstats(riq_selected, 
+p1_riq <- ggbetweenstats(riq_selected, 
                x = metodo, 
                y= value, 
                type = "p",
-               ylab = "Riqueza (%)", 
+               xlab = "Método",
+               ylab = "Riqueza (nº especies)", 
                p.adjust.method = "bonferroni", 
                pairwise.display = "s")
-
+p1_riq 
 ```
 
 ### Correlación 
@@ -557,32 +598,35 @@ Tal y como observamos en la Figura \@ref(fig:riq-correla), los métodos de **lin
 
 ```{r riq-correla, fig.cap="Correlación entre los valores de riqueza estimados por Quadrat Parcela y los otros métodos de campo: Line Intercept y Point Quadrat"}
 
-riq_selected %>% 
+c1_riq_a <- riq_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
-  correla_pares("quadrat_parcela", 
-                xlab = "Riqueza", 
-                ylab = "Riqueza Quadrat Parcela") + 
+  correla_pares("Cuadrado", 
+                xlab = "Riqueza (nº especies)", 
+                ylab = "Riqueza (nº especies) \n Cuadrado") + 
   xlim(0,60) + ylim(0,60) + 
   scale_shape_manual(values = c(19,15), name = "") +
-  scale_colour_manual(values = c("red","black"), name = "") + 
-  scale_fill_manual(values = c("red","black"), name = "") 
+  scale_colour_manual(values = c(color_b,color_c), name = "") + 
+  scale_fill_manual(values = c(color_b,color_c), name = "") 
 
+c1_riq_a 
 ```
 
 #### Correlación Line Intercept - Point Quadrat 
 
 ```{r riq-correlaLI-PQ, fig.cap="Correlación entre los valores de riqueza estimados por Line Intercept y Point Quadrat"}
-riq_selected %>% 
+c1_riq_b <- riq_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
-  filter(metodo %in% c("line_intercept","point_quadrat")) %>%  
-  correla_pares("line_intercept", 
-                xlab = "Riqueza Point Quadrat", 
-                ylab = "Riqueza Line intercept") + 
+  filter(metodo %in% c("Line intercept","Point quadrat")) %>%  
+  correla_pares("Line intercept", 
+                xlab = "Riqueza (nº especies)\n Point Quadrat", 
+                ylab = "Riqueza (nº especies)\n Line intercept") + 
  #  xlim(5,25) + ylim(5,25) + 
-  scale_shape_manual(values = 15, name = "") +
-  scale_colour_manual(values = "black", name = "") + 
-  scale_fill_manual(values = "black", name = "") +
+  scale_shape_manual(values = 17, name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "") +
   theme(legend.position = "none")
+
+c1_riq_b 
 ```
 
 
@@ -594,17 +638,17 @@ Comparamos entre line intercept, quadrat medio y point quadrat.
 # ojo no eliminar el fct_relevel ... si no deja de funcionar una funcion de pairwise
 div <- d %>% filter(variable == "diversidad") %>% 
   mutate(metodo = fct_relevel(metodo, 
-                              c("quadrat","line_intercept","point_quadrat"))) 
+                              c("Cuadrado","Line intercept","Point quadrat"))) 
 
 div_selected <- 
   div %>% dplyr::select(parcela, value, metodo) %>% 
-  filter(metodo != "quadrat") %>% 
+  filter(metodo != "Cuadrado") %>% 
   bind_rows(
     div %>% dplyr::select(parcela, value, metodo) %>% 
-      filter(metodo == "quadrat") %>% 
+      filter(metodo == "Cuadrado") %>% 
       group_by(parcela) %>% 
       summarise(value = mean(value)) %>% 
-      mutate(metodo = "quadrat medio")
+      mutate(metodo = "Cuadrado medio")
   ) %>% 
   mutate(value = abs(value))
   
@@ -642,9 +686,9 @@ check_normality(aov_div)
 ```{r div-kw}
 kw_div <- div_selected %>% 
   mutate(metodo = fct_relevel(metodo, 
-                              c("line_intercept",
-                                "point_quadrat", 
-                                "quadrat medio"))) %>% 
+                              c("Line intercept",
+                                "Point quadrat", 
+                                "Cuadrado medio"))) %>% 
   rename(diversidad = value) %>% 
   comparaKW('diversidad', 'metodo', alpha_posthoc = 0.05)
 
@@ -669,15 +713,21 @@ kw_div$post_hoc %>%
 
 ```{r div-violin, fig.cap="Comparación de los valores de diversidad (Shannon) entre los diferentes métodos de campo."}
 
+
+div_selected <- div_selected %>% 
+    mutate(metodo = fct_recode(metodo, "Cuadrado" = "Cuadrado medio"))
+
 set.seed(123)
-ggbetweenstats(div_selected, 
+p1_div <- ggbetweenstats(div_selected, 
                x = metodo, 
                y= value, 
                type = "np",
+               xlab = "Método",
                ylab = "Diversidad (índice Shannon)", 
                p.adjust.method = "bonferroni", 
                pairwise.display = "s")
 
+p1_div
 ```
 
 ### Correlación 
@@ -687,31 +737,35 @@ El método **line intercept** subestima la diversidad en comparación con el mé
 
 ```{r div-correla, fig.cap="Correlación entre los valores de diversidad estimados por Line Intercept y los otros métodos de campo: Point Quadrat y Quadrat Medio"}
 
-div_selected %>% 
+c1_div_a <- div_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
-  correla_pares("line_intercept", 
-                xlab = "Diversidad", 
-                ylab = "Diversidad Line Intercept") +
+  correla_pares("Cuadrado", 
+                xlab = "Diversidad (Índice de Shannon)", 
+                ylab = "Diversidad (Índice de Shannon) \n Cuadrado") +
   xlim(0.5,3) + ylim(0.5,3) + 
   scale_shape_manual(values = c(19,15), name = "") +
-  scale_colour_manual(values = c("red","black"), name = "") + 
-  scale_fill_manual(values = c("red","black"), name = "") 
+  scale_colour_manual(values = c(color_b,color_c), name = "") + 
+  scale_fill_manual(values = c(color_b,color_c), name = "") 
+
+c1_div_a
 ```
 
 #### Correlación Quadrat Medio - Point Quadrat 
 
 ```{r div-correlaQM-PQ, fig.cap="Correlación entre los valores de diversidad estimados por Quadrat Medio y Point Quadrat."}
-div_selected %>% 
+c1_div_b <- div_selected %>% 
   dplyr::select(parcela, value, metodo) %>% 
-  filter(metodo %in% c("quadrat medio","point_quadrat")) %>% 
-  correla_pares("quadrat medio", 
-                xlab = "Diversidad Point Quadrat", 
-                ylab = "Diversidad Quadrat medio") + 
+  filter(metodo %in% c("Line intercept","Point quadrat")) %>% 
+  correla_pares("Line intercept", 
+                xlab = "Diversidad (Índice de Shannon) \n Point Quadrat", 
+                ylab = "Diversidad (Índice de Shannon) \n Line intercept") + 
   xlim(.5,3) + ylim(.5,3) + 
-  scale_shape_manual(values = 15, name = "") +
-  scale_colour_manual(values = "black", name = "") + 
-  scale_fill_manual(values = "black", name = "") +
+  scale_shape_manual(values = 17, name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "") +
   theme(legend.position = "none")
+
+c1_div_b
 ```
 
 # Objetivo 3. Tecnológico 
@@ -773,14 +827,24 @@ broom::tidy(cob_dronq_w) %>%
 
 ```{r cobdronq-violin, fig.cap="Comparación de los valores de cobertura entre DronQ y Quadrat."}
 
+
+cob_dronq <- cob_dronq %>% 
+  mutate(metodo = 
+           fct_recode(metodo, 
+                      "Cuadrado" = "quadrat",
+                      "Dron" = "dronQ"))
+
 set.seed(123)
-ggbetweenstats(cob_dronq, 
+tec_cob <- ggbetweenstats(cob_dronq, 
                x = metodo, 
                y= value, 
                type = "np",
+               xlab = "Método",
                ylab="Cobertura (%)",
                p.adjust.method = "bonferroni", 
-               pairwise.display = "s") 
+               pairwise.display = "s") + theme(axis.title = element_text(face = "plain"))
+
+tec_cob
 ```
 
 ### Correlación 
@@ -790,26 +854,28 @@ cobdronq.rmse <- cob_dronq %>%
   pivot_wider(values_from = value, names_from = metodo) %>% 
   summarise(
     rmse = round(
-    Metrics::rmse(dronQ, quadrat),4),
-    min = min(quadrat), 
-    max = max(quadrat),
-    rmsen.minmax = rmse / (max(quadrat) - min(quadrat))*100)
+    Metrics::rmse(Dron, Cuadrado),4),
+    min = min(Cuadrado), 
+    max = max(Cuadrado),
+    rmsen.minmax = rmse / (max(Cuadrado) - min(Cuadrado))*100)
 ```
 
 Observamos una alta correlación significativa entre los valores de cobertura estimados por **dronQ** y los estimados en campo por los **quadrats** ($R^2=$ 0.82) (\@ref(fig:cobdronq-correla-general), aunque observamos que el **quadrat** sobreestima los valores dados por el **dronQ**. Asimismo observamos un valor de RMSE de `r round(cobdronq.rmse$rmse,2)` (y un valor de RMSE normalizado de `r round(cobdronq.rmse$rmsen.minmax,2)`) (Tabla \@ref(tab:cobdronq-rmse)). 
 
 
 ```{r cobdronq-correla-general, fig.cap="Correlación entre los valores de cobertura estimados por dronQ y Quadrat."}
-cob_dronq %>%
+tec_cob_b <- cob_dronq %>%
   dplyr::select(parcela, value, metodo) %>% 
-  correla_pares("dronQ", 
-                xlab = expression('Cobertura'['campo']*' (%)'),  
-                ylab = expression('Cobertura'['dron']*' (%)')) + 
+  correla_pares("Dron", 
+                xlab = expression('Cobertura'['Cuadrado']*' (%)'),  
+                ylab = expression('Cobertura'['Dron']*' (%)')) + 
   xlim(0,100) + ylim(0,100) + 
   scale_shape_manual(values = 19, name = "") +
-  scale_colour_manual(values = "blue", name = "") + 
-  scale_fill_manual(values = "blue", name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "") +
   theme(legend.position = "none")
+
+tec_cob_b 
 ```
 
 ```{r cobdronq-rmse}
@@ -826,7 +892,7 @@ cobdronq.rmse %>% kbl(caption = "Cobertura || RMSE",
 dfcob_dronq <- cob_dronq %>% 
   pivot_wider(values_from = value, names_from = metodo)
 
-ct <- partykit::ctree(dronQ ~ quadrat, data = dfcob_dronq)
+ct <- partykit::ctree(Dron ~ quadrat, data = dfcob_dronq)
 ct
 sctest(ct) 
 ```
@@ -843,8 +909,8 @@ ggparty(ct) +
   geom_edge() +
   geom_edge_label(colour = "grey", size = 4) +
   geom_node_plot(gglist = list(
-    geom_point(aes(x = quadrat,y = dronQ)),
-    geom_smooth(aes(x = quadrat, y=dronQ), method = lm, se = FALSE),
+    geom_point(aes(x = quadrat,y = Dron)),
+    geom_smooth(aes(x = quadrat, y= Dron), method = lm, se = FALSE),
     geom_abline(slope = 1, colour = "gray"),
     theme_bw(base_size = 10),
     xlab(expression('Cobertura'['quadrat']*' (%)')),
@@ -876,7 +942,7 @@ ggparty(ct) +
 
 ```{r cobdronq-error5}
 set.seed(123)
-ctrpart <- rpart(dronQ ~ quadrat, data = dfcob_dronq)
+ctrpart <- rpart(Dron ~ quadrat, data = dfcob_dronq)
 printcp(ctrpart) %>% 
   kbl(caption = "CP Error - Modelo global Cobertura",
       digits = c(4,0,3,3,4)) %>% 
@@ -892,7 +958,7 @@ plotcp(ctrpart)
 
 ```{r}
 set.seed(123)
-ctrpart2 <- rpart(dronQ ~ quadrat, data = dfcob_dronq, control = 
+ctrpart2 <- rpart(Dron ~ quadrat, data = dfcob_dronq, control = 
                rpart.control(minsplit = 2, cp=0.22))
 
 printcp(ctrpart2) %>% 
@@ -904,15 +970,15 @@ printcp(ctrpart2) %>%
 
 ```{r cobdronq-party, fig.cap="Relación entre la cobertura estimada con DronQ y con Quadrat. Partición de la varianza (modelo final)"}
 set.seed(123)
-ct_ok <- partykit::ctree(dronQ ~ quadrat, data = dfcob_dronq,
+ct_ok <- partykit::ctree(Dron ~ quadrat, data = dfcob_dronq,
                          control = partykit::ctree_control(minsplit= 1,alpha = 0.05, maxdepth = 1))
 
 ggparty(ct_ok) + 
   geom_edge() +
   geom_edge_label(colour = "grey", size = 4) + 
   geom_node_plot(gglist = list(
-    geom_point(aes(x = quadrat,y = dronQ)),
-    geom_smooth(aes(x=quadrat, y=dronQ), method = lm, se = FALSE),
+    geom_point(aes(x = quadrat,y = Dron)),
+    geom_smooth(aes(x=quadrat, y=Dron), method = lm, se = FALSE),
     geom_abline(slope = 1, colour = "gray"),
     theme_bw(base_size = 10),
     xlab(expression('Cobertura'['campo']*' (%)')),
@@ -940,7 +1006,60 @@ ggparty(ct_ok) +
                   size = 2, 
                   nudge_y = 0.01) +
   theme(legend.position = "none")
+
 ```
+
+```{r}
+verde_claro <- "#c6ddb3"
+verde_oscuro <- "#3e6c62"
+
+g <- ggparty(ct_ok) + 
+  geom_edge() +
+  geom_edge_label(colour = verde_oscuro, size = 4) + 
+  geom_node_plot(gglist = list(
+    geom_point(aes(x = quadrat,y = Dron), size = 3, colour = verde_claro, alpha = .8),
+    geom_smooth(aes(x=quadrat, y=Dron), method = lm, se = FALSE, 
+                colour = "gray"),
+    geom_abline(slope = 1, colour = verde_oscuro),
+    theme_bw(base_size = 12),
+    theme(panel.grid = element_blank()),
+    xlab(expression('Cobertura'['campo']*' (%)')),
+    ylab(expression('Cobertura'['dron']*' (%)')) 
+    ),
+                scales = "fixed", 
+                shared_axis_labels = TRUE,
+                shared_legend = TRUE,
+                legend_separator = TRUE, 
+                id = "terminal") +
+   geom_node_label(
+                  line_list = 
+                    list(aes(label = paste("Node", id)),
+                         aes(label = splitvar),
+                         aes(label = scales::pvalue(p.value, 
+                                                    accuracy = 0.001, 
+                                                    decimal.mark = ".", 
+                                                    add_p = TRUE))), 
+                                                     
+          line_gpar = list(list(size = 8, col = verde_oscuro, 
+                                fontface = "bold"),
+                                   list(size = 12),
+                                   list(size = 12)),
+                  ids = "inner") + 
+  geom_node_label(aes(label = paste0("n = ", nodesize)),
+                  # fontface = "bold",
+                  ids = "terminal",
+                  size = 3, 
+                  nudge_y = 0.01) +
+  theme(legend.position = "none")
+
+
+
+ggsave(g,
+       filename = "/Users/ajpelu/Desktop/party_claro.png",
+       device = "png", height = 10, width =14, unit="cm", dpi = "print",
+       bg = "transparent")
+```
+
 
 
 ```{r cobdronq-correla-partida, fig.cap="Correlación entre los valores de cobertura estimados por dronQ y Quadrat, considerando dos grupos (Coberturas inferiores (azul) y superiores (negro) a 36 % (en campo)."}
@@ -952,7 +1071,7 @@ ff <- dfcob_dronq %>%
 
 ggscatter(ff, 
           x = "quadrat", 
-          y = "dronQ",
+          y = "Dron",
           add = "reg.line",
   conf.int = TRUE, 
   color = "clase", shape = "clase", 
@@ -977,7 +1096,7 @@ ggscatter(ff,
 ```{r cobdronq-rmsegrupos}
 dff.rmse_groups <- ff %>% group_by(clase) %>% 
   summarise(rmse = round(
-    Metrics::rmse(dronQ, quadrat),4),
+    Metrics::rmse(Dron, quadrat),4),
     min = min(quadrat), 
     max = max(quadrat),
     rmsen.minmax = rmse / (max(quadrat) - min(quadrat))*100)
@@ -994,7 +1113,7 @@ dff.rmse_groups %>%
 
 ```{r}
 cob_p <- cob %>% 
-  filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>% 
+  filter(metodo %in% c("dronT", "Line intercept", "Point quadrat")) %>% 
   dplyr::select(metodo, value, parcela) 
 ```
 
@@ -1022,10 +1141,10 @@ scobparcela %>% kable(digits = 2,
 
 ```{r cobdparcela-kw}
 kw_cobp <- cob_p %>% 
-     filter(metodo %in% c("dronT", "line_intercept", "point_quadrat")) %>%
+     filter(metodo %in% c("dronT", "Line intercept", "Point quadrat")) %>%
   mutate(metodo = fct_relevel(metodo, 
-                              c("line_intercept",
-                                "point_quadrat", 
+                              c("Line intercept",
+                                "Point quadrat", 
                                 "dronT"))) %>% 
   rename(cobertura = value) %>% 
   comparaKW('cobertura', 'metodo', alpha_posthoc = 0.05)
@@ -1050,14 +1169,24 @@ kw_cobp$post_hoc %>%
 
 ```{r cobdparcela-violin, fig.cap="Comparación de los valores de cobertura entre los diferentes métodos de campo."}
 set.seed(123)
-ggbetweenstats(cob_p, 
+
+cob_p <- cob_p %>% 
+  mutate(metodo = fct_recode(metodo, 
+                             "Dron" = "dronT"))
+
+
+tec2_cob <- ggbetweenstats(cob_p, 
                x = metodo, 
                y= value, 
+               xlab = "Método", 
                type = "np",
                ylab = "Cobertura (%)", 
                p.adjust.method = "bonferroni", 
                pairwise.display = "s", 
-               centrality.label.args = list(size = 3, nudge_x = -0.4)) 
+               centrality.label.args = list(size = 3, nudge_x = -0.4)) +
+  theme(axis.title = element_text(face = "plain"))
+
+tec2_cob
 
 ```
 
@@ -1066,15 +1195,17 @@ ggbetweenstats(cob_p,
 Tanto **line intercept** como **point quadrat** subestiman los valores de cobertura dados por el dron en la parcela de 500 m^2 (Figura \@ref(fig:cobdparcela-correla)). Independientemente no presentan buenas correlaciones con el valor de cobertura estimado por el dron para toda la parcela. 
 
 ```{r cobdparcela-correla, fig.cap="Correlación entre los valores de cobertura estimados por dronParcela con respecto a Line Intercept y Point Quadrat."}
-cob_p %>% 
-  correla_pares("dronT", 
+tec2_cob_b <- cob_p %>% 
+  correla_pares("Dron", 
                  xlab=expression('Cobertura (%)'),
                 ylab=expression('Cobertura'['dron 500 '*m^2]*' (%)')) + 
   ylim(c(0,65)) + 
   xlim(c(0,65)) +
   scale_shape_manual(values = c(19,15), name = "") +
-  scale_colour_manual(values = c("red","black"), name = "") + 
-  scale_fill_manual(values = c("red","black"), name = "") 
+  scale_colour_manual(values = c(color_b,color_c), name = "") + 
+  scale_fill_manual(values = c(color_b,color_c), name = "")
+
+tec2_cob_b
 ```
 
 
@@ -1132,15 +1263,25 @@ broom::tidy(fit_dronq_w) %>%
 
 ```{r fitdronq-violin, fig.cap="Comparación de los valores de fitovolumen entre DronQ y Quadrat."}
 
+fit_dronq <- fit_dronq %>% 
+  mutate(metodo = 
+           fct_recode(metodo, 
+                      "Cuadrado" = "quadrat",
+                      "Dron" = "dronQ"))
+
 set.seed(123)
-ggbetweenstats(fit_dronq, 
+tec_fit <- ggbetweenstats(fit_dronq, 
                x = metodo, 
                y= value, 
                type = "np",
+               xlab= "Método",
                ylab=expression(Fitovolumen~(m^3~ha^{-1})),
                p.adjust.method = "bonferroni", 
-               pairwise.display = "s") 
+               pairwise.display = "s") +
+  theme(axis.title.x = element_text(face = "plain"))
+tec_fit
 ```
+
 
 ### Correlación 
 
@@ -1161,17 +1302,21 @@ Observamos una alta correlación significativa entre los valores de fitovolumen 
 
 ```{r fitdronq-correla-general, fig.cap="Correlación entre los valores de fitovolumen estimados por dronQ y Quadrat."}
 
-fit_q %>% dplyr::select(id = quadrat, plot, dronQ=dron) %>%
-  rename(parcela = id, quadrat = plot) %>% 
-  pivot_longer(cols = c("dronQ", "quadrat")) %>% 
+tec_fit_b <- fit_q %>% dplyr::select(id = quadrat, plot, dronQ=dron) %>%
+  rename(parcela = id, quadrat = plot) %>%  
+  rename(Dron = dronQ, Cuadrado = quadrat) %>% 
+  pivot_longer(cols = c("Dron", "Cuadrado")) %>% 
   rename(metodo = name) %>% 
-  correla_pares("dronQ", 
- ylab=expression(Fitovolumen[dronQ]~(m^3~ha^{-1})),
- xlab=expression(Fitovolumen[quadrat]~(m^3~ha^{-1}))) +
+  correla_pares("Dron", 
+ ylab=expression(Fitovolumen[Dron]~(m^3~ha^{-1})),
+ xlab=expression(Fitovolumen[Cuadrado]~(m^3~ha^{-1}))) +
   scale_shape_manual(values = 19, name = "") +
-  scale_colour_manual(values = "blue", name = "") + 
-  scale_fill_manual(values = "blue", name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "") +
   theme(legend.position = "none")
+
+tec_fit_b
+
 ```
 
 ```{r fitdronq-rmse}
@@ -1405,13 +1550,21 @@ broom::tidy(fit_p_w) %>%
 ```{r fitdp-violin, fig.cap="Comparación de los valores de fitovolumen entre Dron Parcela y Line Intercept."}
 
 set.seed(123)
-ggbetweenstats(fit_p, 
+
+tec2_fit_a <- fit_p %>% 
+  mutate(metodo = fct_recode(metodo, 
+                             "Line intercept" = "line_intercept",
+                             "Dron" = "dronT")) %>%
+  ggbetweenstats( 
                x = metodo, 
                y= value, 
                type = "np",
+               xlab = "Método",
                ylab=expression(Fitovolumen~(m^3~ha^{-1})),
                p.adjust.method = "bonferroni", 
                pairwise.display = "s") 
+
+tec2_fit_a
 ```
 
 
@@ -1420,19 +1573,109 @@ ggbetweenstats(fit_p,
 No existe una buena correlación entre los valores de fitovolumen ofrecidos por **line intercept** y los datos por el dron en la parcela de 500 m^2 (Figura \@ref(fig:fitdparcela-correla)). 
 
 ```{r fitdparcela-correla, fig.cap="Correlación entre los valores de fitovolumen estimados por dronParcela con respecto a Line Intercept"}
-fit_p %>% 
-  correla_pares("dronT", 
+tec2_fit_b <- fit_p %>% 
+  mutate(metodo = fct_recode(metodo, 
+                             "Line intercept" = "line_intercept",
+                             "Dron" = "dronT")) %>%
+  correla_pares("Dron", 
                  xlab = expression('Fitovolumen'['Line Intercept']~(m^3~ha^{-1})),
                 ylab = expression('Fitovolumen'['dron 500 '*m^2]~(m^3~ha^{-1}))) + 
   ylim(c(50,1250)) + 
   xlim(c(50,1250)) +
   scale_shape_manual(values = 19, name = "") +
-  scale_colour_manual(values = "black", name = "") + 
-  scale_fill_manual(values = "black", name = "") +
+  scale_colour_manual(values = color_a, name = "") + 
+  scale_fill_manual(values = color_a, name = "") +
   theme(legend.position = "none")
+
+tec2_fit_b
 ```
 
 
+# Plots para el trabajo 
 
+
+```{r}
+p1 <- combine_plots(
+  list(p1_cob, p1_fit, p1_riq, p1_div),
+  plotgrid.args = list(nrow = 2),
+  annotation.args = list(
+    tag_levels = "a",
+    tag_suffix = ")", 
+    theme = theme(plot.tag = element_text(size = 40, face = 'bold'))
+  )
+)
+
+ggsave(plot = p1, 
+       here::here("output/paper_SUDOE/plot_comparacion.png"),
+       device = "png",
+       dpi = 300,
+       width = 12, height = 10)
+```
+
+
+```{r}
+c1 <- combine_plots(
+  list(c1_cob_a,c1_cob_b,
+       c1_div_a, c1_div_b,
+       c1_riq_a, c1_riq_b,
+       c1_fit),
+  plotgrid.args = list(ncol = 2), 
+  annotation.args = list(
+    tag_levels = "a",
+    tag_suffix = ")",
+    theme = theme(
+      plot.margin = margin(0, 0, 0, 0, "cm"), 
+      legend.position = 'bottom',
+      plot.tag = element_text(size = 40, face = 'bold'))), 
+  guides = 'collect')
+    
+ggsave(plot = c1, 
+       here::here("output/paper_SUDOE/plot_correla.png"),
+       device = "png",
+       dpi = 300,
+       width = 9, height = 12)
+```
+
+
+```{r}
+tec <- combine_plots(
+  list(tec_cob, tec_cob_b, tec_fit, tec_fit_b),
+  plotgrid.args = list(nrow = 2, 
+                       widths = c(.65,.35)),
+  annotation.args = list(
+    tag_levels = "a",
+    tag_suffix = ")", 
+    theme = theme(plot.tag = element_text(size = 40, face = 'bold'))
+  )
+)
+
+ggsave(plot = tec, 
+       here::here("output/paper_SUDOE/plot_tecnologico.png"),
+       device = "png",
+       dpi = 300,
+       width = 9, height = 8)
+```
+
+
+```{r}
+tec2 <- combine_plots(
+  list(tec2_cob, tec2_cob_b, tec2_fit_a, tec2_fit_b),
+  plotgrid.args = list(nrow = 2, 
+                       widths = c(.65,.35)),
+  annotation.args = list(
+    tag_levels = "a",
+    tag_suffix = ")", 
+    theme = theme(plot.tag = element_text(size = 40, face = 'bold'),
+                   legend.position = 'bottom')
+  )
+)
+
+ggsave(plot = tec2, 
+       here::here("output/paper_SUDOE/plot_tecnologico_LI.png"),
+       device = "png",
+       dpi = 300,
+       width = 9, height = 8)
+
+```
 
 
