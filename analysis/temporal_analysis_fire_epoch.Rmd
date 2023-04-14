@@ -649,6 +649,7 @@ plot.rec_total_gs <- plot_smooths(
                (lubridate::interval(autumn_fire) %/% months(1)),
              linetype="dotted"
              ) + 
+  ylim(0,100) + 
   geom_point(data = veg_gs, 
              aes(x=meses, y=cob_total, colour=treat), 
              alpha=.6, size=.8,
@@ -661,7 +662,8 @@ inset.rec_tot_gs <- ggpubr::ggboxplot(ad_gs, x="meses", y="cob_total", fill = "t
   theme(legend.position = "none",
         panel.background = element_rect(fill = "transparent",colour = NA),
         plot.background = element_rect(fill = "transparent",colour = NA),
-        text = element_text(size = 10))
+        text = element_text(size = 10)) +
+  ylim(0,100) 
 ```
 
 ```{r plot_rectot_gs, dev = c('png','jpeg','tiff')}
@@ -755,17 +757,20 @@ plot.fitovol_gs <- plot_smooths(
                (lubridate::interval(autumn_fire) %/% months(1)),
              linetype="dotted"
              ) + 
+  scale_y_continuous(limits = c(0, 9000), breaks = seq(0, 9000, by = 3000)) +
   geom_point(data = veg_gs, 
              aes(x=meses, y=fitovol, colour=treat), 
              alpha=.6, size=.8,
              position = position_jitter(width = .4)) +
-  ggtitle("Genista scorpius")
+  ggtitle("Genista scorpius") 
+
 
 inset.fitovol_gs <- ggpubr::ggboxplot(ad_gs, x="meses", y="fitovol", fill = "treat", palette = colores, ylab="") + 
   theme(legend.position = "none", 
         panel.background = element_rect(fill = "transparent",colour = NA),
         plot.background = element_rect(fill = "transparent",colour = NA),
-        text = element_text(size = 10))
+        text = element_text(size = 10)) +
+  scale_y_continuous(limits = c(0, 9000), breaks = seq(0, 9000, by = 3000)) 
 
 ```
 
